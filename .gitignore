@@ -1,0 +1,25 @@
+# Virtual Environment
+venv/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Large datasets
+data/
+url_module/data/
+
+# ML models
+url_module/models/
+*.joblib
+*.pkl
+
+# Database
+*.sqlite3
+
+# Credentials
+credentials.json
+token.json
+
+# CSV datasets
+*.csv

@@ -1,0 +1,15 @@
+Dataset cleanup report
+======================
+Input rows: 549346
+Output rows: 505597
+Dropped rows: 40
+Invalid labels: 0
+
+Issue counts:
+- duplicate: 43706
+- invalid_url: 40
+- label_conflict: 3
+
+Label distribution:
+- good: 392862
+- bad: 112735

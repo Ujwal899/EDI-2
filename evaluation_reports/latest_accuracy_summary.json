@@ -1,0 +1,100 @@
+{
+  "generated_utc": "2026-05-20T15:38:09.652561+00:00",
+  "email": {
+    "rows": 517401,
+    "holdout_rows": 103481,
+    "accuracy": 0.9860747383577662,
+    "weighted_f1": 0.9862706030462299,
+    "macro_f1": 0.9589020426237506,
+    "phishing_auc": 0.9980660996334604,
+    "decision_accuracy_sample": 0.956,
+    "decision_errors_sample": 0
+  },
+  "url": {
+    "rows": 505597,
+    "holdout_rows": 101120,
+    "roc_auc": 0.95484736406144,
+    "default": {
+      "accuracy": 0.9158227848101266,
+      "precision_bad": 0.8047244778322984,
+      "recall_bad": 0.8219275291613075,
+      "f1_bad": 0.8132350359838512,
+      "macro_f1": 0.8794510981379706
+    },
+    "threshold": {
+      "accuracy": 0.9189774525316455,
+      "precision_bad": 0.8295830271858927,
+      "recall_bad": 0.8012152392779527,
+      "f1_bad": 0.8151524039437764,
+      "macro_f1": 0.8816353596306583
+    },
+    "threshold_value": 0.55
+  },
+  "multimodal_rules": {
+    "passed": 6,
+    "total": 6,
+    "cases": [
+      {
+        "case": "safe sender",
+        "minimum_expected": "SAFE",
+        "actual": "SAFE",
+        "ok": true,
+        "reasons": []
+      },
+      {
+        "case": "brand spoof sender",
+        "minimum_expected": "SUSPICIOUS",
+        "actual": "SUSPICIOUS",
+        "ok": true,
+        "reasons": [
+          "Sender display name imitates a known brand"
+        ]
+      },
+      {
+        "case": "risky attachment",
+        "minimum_expected": "SUSPICIOUS",
+        "actual": "SUSPICIOUS",
+        "ok": true,
+        "reasons": [
+          "Risky attachment type found: update.exe"
+        ]
+      },
+      {
+        "case": "credential webpage",
+        "minimum_expected": "SUSPICIOUS",
+        "actual": "SUSPICIOUS",
+        "ok": true,
+        "reasons": [
+          "Webpage contains a password or credential form"
+        ]
+      },
+      {
+        "case": "qr image",
+        "minimum_expected": "SUSPICIOUS",
+        "actual": "SUSPICIOUS",
+        "ok": true,
+        "reasons": [
+          "Image-based content supplied for analysis",
+          "QR code or scan-code language detected",
+          "Image content carries login or verification wording"
+        ]
+      },
+      {
+        "case": "combined high risk",
+        "minimum_expected": "PHISHING",
+        "actual": "PHISHING",
+        "ok": true,
+        "reasons": [
+          "Sender display name imitates a known brand",
+          "Reply-To domain differs from sender domain",
+          "Image attachment detected: scan-qr.png",
+          "QR-code style attachment detected: scan-qr.png",
+          "Risky attachment type found: update.exe",
+          "Webpage contains a password or credential form",
+          "Image-based content supplied for analysis",
+          "QR code or scan-code language detected"
+        ]
+      }
+    ]
+  }
+}

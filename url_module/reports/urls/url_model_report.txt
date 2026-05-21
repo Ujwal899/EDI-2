@@ -1,0 +1,62 @@
+URL Model Training Report
+=========================
+Train size: 404477
+Validation size: 101120
+Class distribution (train): Counter({np.int64(0): 314289, np.int64(1): 90188})
+
+Features:
+- url_length
+- hostname_length
+- path_length
+- query_length
+- has_https
+- dot_count
+- hyphen_count
+- at_count
+- slash_count
+- qmark_count
+- equal_count
+- digit_count
+- digit_ratio
+- subdomain_count
+- tld_length
+- has_ip
+- https_token_in_host
+- suspicious_kw_count
+- suspicious_kw_flag
+
+Logistic Regression
+              precision    recall  f1-score   support
+
+        good     0.9066    0.8538    0.8795     78573
+         bad     0.5766    0.6936    0.6297     22547
+
+    accuracy                         0.8181    101120
+   macro avg     0.7416    0.7737    0.7546    101120
+weighted avg     0.8331    0.8181    0.8238    101120
+
+ROC-AUC: 0.8529
+
+Random Forest
+              precision    recall  f1-score   support
+
+        good     0.9486    0.9428    0.9457     78573
+         bad     0.8047    0.8219    0.8132     22547
+
+    accuracy                         0.9158    101120
+   macro avg     0.8767    0.8823    0.8795    101120
+weighted avg     0.9165    0.9158    0.9161    101120
+
+ROC-AUC: 0.9548
+
+Best Model
+Selected: Random Forest
+Bad-class F1: 0.8132
+Balanced threshold (best F1): 0.55
+Bad-class F1 at balanced threshold: 0.8152
+
+High-recall threshold profile
+Threshold (target recall >= 0.90): 0.27
+Bad-class recall: 0.9022
+Bad-class precision: 0.6595
+Bad-class F1: 0.7620

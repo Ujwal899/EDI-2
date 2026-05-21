@@ -1,0 +1,159 @@
+Phishing Detection Accuracy Evaluation
+======================================
+Generated UTC: 2026-05-20T15:38:09.652561+00:00
+Project root: C:\Users\Dell\OneDrive\Desktop\EDI
+Note: This evaluates current saved artifacts and rule checks; it does not retrain models.
+
+Email Model Evaluation
+======================
+Dataset rows used: 517401
+Holdout rows: 103481
+Label distribution: {'SAFE': 440953, 'SPAM': 63837, 'PHISHING': 12611}
+Accuracy: 0.9861
+Precision weighted: 0.9867
+Recall weighted: 0.9861
+F1 weighted: 0.9863
+F1 macro: 0.9589
+Confusion matrix rows=true cols=pred, order SAFE, SPAM, PHISHING:
+[[87103   929   159]
+ [  156 12504   108]
+ [   24    65  2433]]
+
+              precision    recall  f1-score   support
+
+        SAFE     0.9979    0.9877    0.9928     88191
+        SPAM     0.9264    0.9793    0.9521     12768
+    PHISHING     0.9011    0.9647    0.9318      2522
+
+    accuracy                         0.9861    103481
+   macro avg     0.9418    0.9772    0.9589    103481
+weighted avg     0.9867    0.9861    0.9863    103481
+
+PHISHING one-vs-rest ROC-AUC: 0.9981
+
+Email Decision Layer Evaluation
+Sample rows: 10000
+Note: SPAM is mapped to SUSPICIOUS because API output has SAFE/SUSPICIOUS/PHISHING.
+Decision-layer parser errors counted as SUSPICIOUS: 0
+Decision-layer accuracy: 0.9560
+              precision    recall  f1-score   support
+
+        SAFE     0.9980    0.9778    0.9878      8568
+  SUSPICIOUS     0.7452    0.9674    0.8419      1197
+    PHISHING     0.4706    0.1021    0.1678       235
+
+    accuracy                         0.9560     10000
+   macro avg     0.7379    0.6825    0.6658     10000
+weighted avg     0.9553    0.9560    0.9511     10000
+
+
+URL Model Evaluation
+====================
+Dataset rows used: 505597
+Holdout rows: 101120
+Label distribution: {np.int64(1): 112735, np.int64(0): 392862} where 0=good, 1=bad
+ROC-AUC: 0.9548
+
+Default model predict():
+{
+  "accuracy": 0.9158227848101266,
+  "precision_bad": 0.8047244778322984,
+  "recall_bad": 0.8219275291613075,
+  "f1_bad": 0.8132350359838512,
+  "macro_f1": 0.8794510981379706
+}
+              precision    recall  f1-score   support
+
+        good     0.9486    0.9428    0.9457     78573
+         bad     0.8047    0.8219    0.8132     22547
+
+    accuracy                         0.9158    101120
+   macro avg     0.8767    0.8823    0.8795    101120
+weighted avg     0.9165    0.9158    0.9161    101120
+
+
+Configured threshold: 0.5500
+{
+  "accuracy": 0.9189774525316455,
+  "precision_bad": 0.8295830271858927,
+  "recall_bad": 0.8012152392779527,
+  "f1_bad": 0.8151524039437764,
+  "macro_f1": 0.8816353596306583
+}
+              precision    recall  f1-score   support
+
+        good     0.9435    0.9528    0.9481     78573
+         bad     0.8296    0.8012    0.8152     22547
+
+    accuracy                         0.9190    101120
+   macro avg     0.8865    0.8770    0.8816    101120
+weighted avg     0.9181    0.9190    0.9185    101120
+
+
+Multimodal Rule Checks
+======================
+These checks evaluate the rule-based non-dataset features.
+Passed: 6/6
+[
+  {
+    "case": "safe sender",
+    "minimum_expected": "SAFE",
+    "actual": "SAFE",
+    "ok": true,
+    "reasons": []
+  },
+  {
+    "case": "brand spoof sender",
+    "minimum_expected": "SUSPICIOUS",
+    "actual": "SUSPICIOUS",
+    "ok": true,
+    "reasons": [
+      "Sender display name imitates a known brand"
+    ]
+  },
+  {
+    "case": "risky attachment",
+    "minimum_expected": "SUSPICIOUS",
+    "actual": "SUSPICIOUS",
+    "ok": true,
+    "reasons": [
+      "Risky attachment type found: update.exe"
+    ]
+  },
+  {
+    "case": "credential webpage",
+    "minimum_expected": "SUSPICIOUS",
+    "actual": "SUSPICIOUS",
+    "ok": true,
+    "reasons": [
+      "Webpage contains a password or credential form"
+    ]
+  },
+  {
+    "case": "qr image",
+    "minimum_expected": "SUSPICIOUS",
+    "actual": "SUSPICIOUS",
+    "ok": true,
+    "reasons": [
+      "Image-based content supplied for analysis",
+      "QR code or scan-code language detected",
+      "Image content carries login or verification wording"
+    ]
+  },
+  {
+    "case": "combined high risk",
+    "minimum_expected": "PHISHING",
+    "actual": "PHISHING",
+    "ok": true,
+    "reasons": [
+      "Sender display name imitates a known brand",
+      "Reply-To domain differs from sender domain",
+      "Image attachment detected: scan-qr.png",
+      "QR-code style attachment detected: scan-qr.png",
+      "Risky attachment type found: update.exe",
+      "Webpage contains a password or credential form",
+      "Image-based content supplied for analysis",
+      "QR code or scan-code language detected"
+    ]
+  }
+]

@@ -1,0 +1,2112 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Phishing Detection Dashboard</title>
+  <style>
+    :root {
+      --bg: #f6f8fb;
+      --surface: #ffffff;
+      --surface-soft: #f9fbfd;
+      --ink: #17202a;
+      --muted: #607080;
+      --muted-2: #8793a0;
+      --line: #dce3ea;
+      --line-strong: #c9d3dc;
+      --safe: #15834f;
+      --safe-soft: #e8f6ef;
+      --suspicious: #a86f00;
+      --suspicious-soft: #fff3d8;
+      --phishing: #c93434;
+      --phishing-soft: #fde8e8;
+      --info: #2563eb;
+      --shadow: 0 10px 24px rgba(24, 39, 55, 0.06);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background: linear-gradient(180deg, #f8fafc 0%, var(--bg) 240px);
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      letter-spacing: 0;
+    }
+
+    button,
+    input,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      min-height: 38px;
+      border: 1px solid var(--line-strong);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--ink);
+      cursor: pointer;
+      transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+    }
+
+    button:hover:not(:disabled) {
+      background: #eef4fa;
+      border-color: #b8c5d1;
+    }
+
+    button:active:not(:disabled) {
+      transform: translateY(1px);
+    }
+
+    button:disabled {
+      cursor: wait;
+      opacity: 0.68;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--ink);
+      padding: 8px 10px;
+      outline: none;
+    }
+
+    input {
+      min-height: 38px;
+    }
+
+    textarea {
+      min-height: 126px;
+      resize: vertical;
+      line-height: 1.45;
+    }
+
+    input:focus,
+    textarea:focus {
+      border-color: #8db2dc;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    .app-shell {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(14px);
+    }
+
+    .topbar-inner {
+      width: min(1360px, 100%);
+      margin: 0 auto;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      width: 38px;
+      height: 38px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      background: #16212d;
+      color: #fff;
+      font-weight: 800;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin: 0;
+    }
+
+    h1 {
+      font-size: 1.08rem;
+      line-height: 1.2;
+    }
+
+    .subtitle {
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 0.84rem;
+    }
+
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .page-nav {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .nav-btn {
+      min-height: 32px;
+      padding: 0 10px;
+      font-size: 0.78rem;
+      font-weight: 750;
+      color: var(--muted);
+      background: transparent;
+    }
+
+    .nav-btn.active {
+      color: #174d8f;
+      border-color: #9eb8d6;
+      background: #eaf2fb;
+    }
+
+    .limit-control {
+      width: 92px;
+    }
+
+    .primary-btn {
+      border-color: #1f5fbf;
+      background: #2563eb;
+      color: #fff;
+      font-weight: 700;
+      padding: 0 14px;
+    }
+
+    .primary-btn:hover:not(:disabled) {
+      background: #1f55ca;
+      border-color: #1f55ca;
+    }
+
+    .workspace {
+      width: min(1440px, 100%);
+      margin: 0 auto;
+      padding: 20px;
+      display: grid;
+      grid-template-columns: 330px minmax(0, 1fr);
+      gap: 16px;
+      min-height: 0;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    .inbox-panel {
+      min-height: calc(100vh - 98px);
+      display: grid;
+      grid-template-rows: auto auto 1fr;
+      overflow: hidden;
+    }
+
+    .panel-head {
+      padding: 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .section-title h2 {
+      font-size: 0.98rem;
+    }
+
+    .count-chip {
+      min-width: 30px;
+      border-radius: 999px;
+      padding: 3px 9px;
+      background: #eef3f8;
+      color: var(--muted);
+      font-size: 0.76rem;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .search-row {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--line);
+      display: grid;
+      gap: 10px;
+    }
+
+    .filter-tabs {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 6px;
+    }
+
+    .filter-tab {
+      min-height: 32px;
+      padding: 0 8px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    .filter-tab.active {
+      border-color: #9eb8d6;
+      background: #eaf2fb;
+      color: #174d8f;
+    }
+
+    .email-list {
+      min-height: 0;
+      overflow: auto;
+      padding: 8px;
+      display: grid;
+      align-content: start;
+      gap: 8px;
+    }
+
+    .email-item {
+      border: 1px solid var(--line);
+      border-left: 4px solid var(--line-strong);
+      border-radius: 8px;
+      background: var(--surface);
+      padding: 11px;
+      cursor: pointer;
+      transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .email-item:hover {
+      background: var(--surface-soft);
+      border-color: #c3ced8;
+    }
+
+    .email-item.active {
+      border-color: #7ba7d9;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    .email-item.safe {
+      border-left-color: var(--safe);
+    }
+
+    .email-item.suspicious {
+      border-left-color: var(--suspicious);
+    }
+
+    .email-item.phishing {
+      border-left-color: var(--phishing);
+    }
+
+    .email-topline {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .email-item h3 {
+      font-size: 0.91rem;
+      line-height: 1.35;
+      font-weight: 700;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .email-meta,
+    .email-snippet {
+      color: var(--muted);
+      font-size: 0.78rem;
+      line-height: 1.4;
+    }
+
+    .email-meta {
+      margin-top: 6px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .email-snippet {
+      margin-top: 8px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .dashboard {
+      min-width: 0;
+      display: grid;
+      grid-template-rows: auto auto auto minmax(0, 1fr);
+      gap: 12px;
+    }
+
+    .page-hidden {
+      display: none !important;
+    }
+
+    .hero-panel {
+      padding: 16px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .hero-panel h2 {
+      font-size: 1.34rem;
+      line-height: 1.2;
+    }
+
+    .status {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.45;
+    }
+
+    .health-card {
+      min-width: 210px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      background: var(--surface-soft);
+    }
+
+    .health-label {
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .health-value {
+      margin-top: 5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.93rem;
+      font-weight: 700;
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--muted-2);
+    }
+
+    .dot.ready {
+      background: var(--safe);
+    }
+
+    .dot.error {
+      background: var(--phishing);
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .metric {
+      padding: 13px;
+      min-height: 92px;
+      display: grid;
+      align-content: space-between;
+      gap: 10px;
+    }
+
+    .metric-label {
+      color: var(--muted);
+      font-size: 0.74rem;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .metric-value {
+      font-size: 1.65rem;
+      line-height: 1;
+      font-weight: 800;
+    }
+
+    .metric-note {
+      color: var(--muted);
+      font-size: 0.78rem;
+      line-height: 1.35;
+    }
+
+    .manual-panel {
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .manual-panel > .section-title {
+      padding: 15px 16px;
+      border-bottom: 1px solid var(--line);
+      background: #fbfcfe;
+    }
+
+    .manual-workbench {
+      padding: 14px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.75fr);
+      gap: 14px;
+      align-items: start;
+    }
+
+    .manual-layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      align-items: start;
+    }
+
+    .tool-hidden {
+      display: none !important;
+    }
+
+    .manual-box {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      padding: 13px;
+      display: grid;
+      gap: 9px;
+      min-height: 100%;
+    }
+
+    .manual-box h3 {
+      font-size: 0.9rem;
+      margin: 0;
+      color: #21303d;
+    }
+
+    .manual-box.wide {
+      grid-column: 1 / -1;
+    }
+
+    .mini-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .section-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: auto;
+    }
+
+    .manual-box textarea {
+      min-height: 82px;
+    }
+
+    #manual-body {
+      min-height: 112px;
+    }
+
+    #manual-page {
+      min-height: 104px;
+    }
+
+    .manual-output {
+      display: grid;
+      gap: 12px;
+      align-content: start;
+      position: sticky;
+      top: 86px;
+    }
+
+    .form-row {
+      display: grid;
+      gap: 7px;
+    }
+
+    .form-label {
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .secondary-btn {
+      padding: 0 12px;
+      font-weight: 700;
+    }
+
+    .manual-result {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcfe;
+      padding: 12px;
+      min-height: 132px;
+    }
+
+    .verdict-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      padding: 12px;
+      margin-bottom: 10px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .target-line {
+      color: #24313d;
+      font-size: 1rem;
+      line-height: 1.4;
+      font-weight: 800;
+      word-break: break-word;
+    }
+
+    .verdict-text {
+      color: var(--muted);
+      font-size: 0.88rem;
+      line-height: 1.45;
+    }
+
+    .manual-history-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .manual-history {
+      display: grid;
+      gap: 8px;
+      max-height: 330px;
+      overflow: auto;
+    }
+
+    .history-item {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      padding: 10px;
+      display: grid;
+      gap: 7px;
+    }
+
+    .history-topline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .history-title {
+      min-width: 0;
+      font-size: 0.88rem;
+      font-weight: 800;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .history-meta {
+      color: var(--muted);
+      font-size: 0.76rem;
+      line-height: 1.35;
+    }
+
+    .ghost-btn {
+      min-height: 32px;
+      padding: 0 10px;
+      font-size: 0.78rem;
+      font-weight: 750;
+    }
+
+    .result-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .result-title {
+      font-size: 0.95rem;
+      font-weight: 800;
+    }
+
+    .result-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .work-grid {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.75fr);
+      gap: 14px;
+    }
+
+    .detail-panel,
+    .insight-panel {
+      min-height: 0;
+      overflow: auto;
+    }
+
+    .detail-panel {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+    }
+
+    .detail-body {
+      padding: 16px;
+      min-height: 0;
+      overflow: auto;
+    }
+
+    .detail-title {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .subject {
+      margin-top: 4px;
+      font-size: 1.15rem;
+      line-height: 1.35;
+      font-weight: 800;
+      word-break: break-word;
+    }
+
+    .meta-grid {
+      margin-top: 16px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .field {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 11px;
+      background: var(--surface-soft);
+      min-width: 0;
+    }
+
+    .field-label {
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .field-value {
+      margin-top: 5px;
+      color: #24313d;
+      font-size: 0.91rem;
+      line-height: 1.45;
+      font-weight: 650;
+      word-break: break-word;
+    }
+
+    .snippet-box {
+      margin-top: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcfe;
+      padding: 12px;
+      color: #334250;
+      line-height: 1.55;
+      font-size: 0.92rem;
+      word-break: break-word;
+    }
+
+    .reason-list {
+      margin: 12px 0 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 8px;
+    }
+
+    .reason-list li {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      padding: 10px 11px;
+      color: #334250;
+      line-height: 1.4;
+      font-size: 0.88rem;
+    }
+
+    .risk-strip {
+      height: 9px;
+      border-radius: 999px;
+      background: #e9eef3;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: var(--phish-width, 0%) var(--sus-width, 0%) var(--safe-width, 100%);
+    }
+
+    .risk-strip span:nth-child(1) {
+      background: var(--phishing);
+    }
+
+    .risk-strip span:nth-child(2) {
+      background: var(--suspicious);
+    }
+
+    .risk-strip span:nth-child(3) {
+      background: var(--safe);
+    }
+
+    .insight-panel {
+      padding: 16px;
+      display: grid;
+      align-content: start;
+      gap: 14px;
+    }
+
+    .insight-block h3 {
+      font-size: 0.96rem;
+      margin-bottom: 10px;
+    }
+
+    .legend {
+      display: grid;
+      gap: 8px;
+    }
+
+    .legend-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+
+    .legend-name {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .legend-swatch {
+      width: 10px;
+      height: 10px;
+      border-radius: 3px;
+    }
+
+    .guidance {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 9px;
+    }
+
+    .guidance li {
+      color: #344452;
+      font-size: 0.88rem;
+      line-height: 1.45;
+      padding-left: 14px;
+      position: relative;
+    }
+
+    .guidance li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0.62em;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--info);
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 24px;
+      border-radius: 999px;
+      padding: 3px 9px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .pill.safe {
+      background: var(--safe-soft);
+      color: var(--safe);
+    }
+
+    .pill.suspicious {
+      background: var(--suspicious-soft);
+      color: var(--suspicious);
+    }
+
+    .pill.phishing {
+      background: var(--phishing-soft);
+      color: var(--phishing);
+    }
+
+    .empty {
+      border: 1px dashed var(--line-strong);
+      border-radius: 8px;
+      background: var(--surface-soft);
+      color: var(--muted);
+      padding: 14px;
+      font-size: 0.91rem;
+      line-height: 1.45;
+    }
+
+    .error-text {
+      color: var(--phishing);
+    }
+
+    @media (max-width: 1120px) {
+      .workspace {
+        grid-template-columns: 1fr;
+      }
+
+      .inbox-panel {
+        min-height: auto;
+      }
+
+      .email-list {
+        max-height: 380px;
+      }
+
+      .work-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .manual-workbench {
+        grid-template-columns: 1fr;
+      }
+
+      .manual-output {
+        position: static;
+      }
+
+      .manual-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .topbar-inner,
+      .workspace {
+        padding-left: 12px;
+        padding-right: 12px;
+      }
+
+      .topbar-inner,
+      .hero-panel {
+        align-items: stretch;
+        flex-direction: column;
+        display: flex;
+      }
+
+      .topbar-actions {
+        display: grid;
+        grid-template-columns: 92px minmax(0, 1fr);
+      }
+
+      .metrics,
+      .mini-grid,
+      .meta-grid,
+      .result-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .filter-tabs {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .health-card {
+        min-width: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">PD</div>
+          <div>
+            <h1>Phishing Detection</h1>
+            <p class="subtitle">Gmail security dashboard</p>
+          </div>
+        </div>
+        <div class="topbar-actions">
+          <nav class="page-nav" aria-label="Detector pages">
+            <button class="nav-btn active" type="button" data-page="dashboard">Dashboard</button>
+            <button class="nav-btn" type="button" data-page="links">Links</button>
+            <button class="nav-btn" type="button" data-page="email">Email</button>
+            <button class="nav-btn" type="button" data-page="sender">Sender</button>
+            <button class="nav-btn" type="button" data-page="attachments">Attachments</button>
+            <button class="nav-btn" type="button" data-page="webpage">Webpage</button>
+            <button class="nav-btn" type="button" data-page="image">Image / QR</button>
+            <button class="nav-btn" type="button" data-page="full">Full Scan</button>
+          </nav>
+          <input id="limit" class="limit-control" type="number" min="1" max="100" value="20" aria-label="Email fetch limit" />
+          <button id="refresh" class="primary-btn" type="button">Refresh inbox</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="workspace">
+      <aside class="panel inbox-panel">
+        <div class="panel-head">
+          <div class="section-title">
+            <h2>Analyzed emails</h2>
+            <span id="visible-count" class="count-chip">0</span>
+          </div>
+          <p class="subtitle">Recent messages scored by email and URL signals.</p>
+        </div>
+
+        <div class="search-row">
+          <input id="search" type="search" placeholder="Search subject, sender, or snippet" aria-label="Search emails" />
+          <div class="filter-tabs" role="tablist" aria-label="Risk filter">
+            <button class="filter-tab active" type="button" data-filter="ALL">All</button>
+            <button class="filter-tab" type="button" data-filter="PHISHING">Phishing</button>
+            <button class="filter-tab" type="button" data-filter="SUSPICIOUS">Suspicious</button>
+            <button class="filter-tab" type="button" data-filter="SAFE">Safe</button>
+          </div>
+        </div>
+
+        <div id="email-list" class="email-list"></div>
+      </aside>
+
+      <main class="dashboard">
+        <section class="panel hero-panel">
+          <div>
+            <h2>Inbox Threat Overview</h2>
+            <div id="status" class="status">Loading emails...</div>
+          </div>
+          <div class="health-card">
+            <div class="health-label">System status</div>
+            <div class="health-value"><span id="health-dot" class="dot"></span><span id="health-text">Checking</span></div>
+          </div>
+        </section>
+
+        <section class="metrics" aria-label="Dashboard metrics">
+          <article class="panel metric">
+            <div class="metric-label">Total scanned</div>
+            <div id="total-count" class="metric-value">0</div>
+            <div class="metric-note">Messages returned by Gmail</div>
+          </article>
+          <article class="panel metric">
+            <div class="metric-label">High risk</div>
+            <div id="phishing-count" class="metric-value" style="color: var(--phishing);">0</div>
+            <div class="metric-note">Confirmed phishing labels</div>
+          </article>
+          <article class="panel metric">
+            <div class="metric-label">Needs review</div>
+            <div id="suspicious-count" class="metric-value" style="color: var(--suspicious);">0</div>
+            <div class="metric-note">Suspicious signals found</div>
+          </article>
+          <article class="panel metric">
+            <div class="metric-label">Avg confidence</div>
+            <div id="confidence-count" class="metric-value">0%</div>
+            <div class="metric-note">Across visible results</div>
+          </article>
+        </section>
+
+        <section class="panel manual-panel page-hidden" id="detector-pages" aria-label="Manual phishing analysis">
+          <div class="section-title">
+            <div>
+              <h2 id="detector-title">Links</h2>
+              <p id="detector-subtitle" class="subtitle">Check phishing signals on a dedicated page.</p>
+            </div>
+          </div>
+
+          <div class="manual-workbench">
+            <div class="manual-layout">
+              <div class="manual-box" data-tool-page="links">
+                <h3>URL / Link detection</h3>
+                <div class="form-row">
+                  <label class="form-label" for="manual-url">URL</label>
+                  <input id="manual-url" type="url" placeholder="https://example.com/login" />
+                </div>
+                <div class="form-row">
+                  <label class="form-label" for="manual-links">Extra links</label>
+                  <textarea id="manual-links" placeholder="Paste extra links, one per line"></textarea>
+                </div>
+                <div class="section-actions">
+                  <button id="analyze-url-btn" class="primary-btn" type="button">Analyze Links</button>
+                </div>
+              </div>
+
+              <div class="manual-box" data-tool-page="email">
+                <h3>Email content detection</h3>
+                <div class="form-row">
+                  <label class="form-label" for="manual-sender">Sender</label>
+                  <input id="manual-sender" type="text" placeholder="security@example.com" />
+                </div>
+                <div class="form-row">
+                  <label class="form-label" for="manual-subject">Subject</label>
+                  <input id="manual-subject" type="text" placeholder="Account verification required" />
+                </div>
+                <div class="form-row">
+                  <label class="form-label" for="manual-body">Email body</label>
+                  <textarea id="manual-body" placeholder="Paste the full email text here"></textarea>
+                </div>
+                <div class="section-actions">
+                  <button id="analyze-email-btn" class="primary-btn" type="button">Analyze Email</button>
+                </div>
+              </div>
+
+              <div class="manual-box" data-tool-page="sender">
+                <h3>Sender information</h3>
+                <div class="mini-grid">
+                  <div class="form-row">
+                    <label class="form-label" for="manual-reply-to">Reply-To</label>
+                    <input id="manual-reply-to" type="text" placeholder="reply@example.com" />
+                  </div>
+                  <div class="form-row">
+                    <label class="form-label" for="manual-return-path">Return-Path</label>
+                    <input id="manual-return-path" type="text" placeholder="bounce@example.com" />
+                  </div>
+                </div>
+                <div class="section-actions">
+                  <button id="analyze-sender-btn" class="primary-btn" type="button">Analyze Sender</button>
+                </div>
+              </div>
+
+              <div class="manual-box" data-tool-page="attachments">
+                <h3>Attachment detection</h3>
+                <div class="form-row">
+                  <label class="form-label" for="manual-attachments">Attachments</label>
+                  <textarea id="manual-attachments" placeholder="invoice.pdf&#10;scan-qr.png&#10;update.exe"></textarea>
+                </div>
+                <div class="section-actions">
+                  <button id="analyze-attachments-btn" class="primary-btn" type="button">Analyze Attachments</button>
+                </div>
+              </div>
+
+              <div class="manual-box" data-tool-page="webpage">
+                <h3>Webpage feature detection</h3>
+                <div class="form-row">
+                  <label class="form-label" for="manual-page">Webpage text or HTML</label>
+                  <textarea id="manual-page" placeholder="Paste page text, HTML, form fields, or visible webpage content"></textarea>
+                </div>
+                <div class="section-actions">
+                  <button id="analyze-page-btn" class="primary-btn" type="button">Analyze Webpage</button>
+                </div>
+              </div>
+
+              <div class="manual-box" data-tool-page="image">
+                <h3>Image / QR detection</h3>
+                <div class="form-row">
+                  <label class="form-label" for="manual-image">Image or QR notes</label>
+                  <textarea id="manual-image" placeholder="Example: QR code asks user to verify account"></textarea>
+                </div>
+                <div class="section-actions">
+                  <button id="analyze-image-btn" class="primary-btn" type="button">Analyze Image / QR</button>
+                </div>
+              </div>
+
+              <div class="manual-box wide" data-tool-page="full">
+                <h3>Full multimodal detection</h3>
+                <p class="subtitle">Uses all filled fields together: email, links, sender details, attachments, webpage features, images, and QR signals.</p>
+                <div class="section-actions">
+                  <button id="analyze-full-btn" class="primary-btn" type="button">Analyze Everything</button>
+                </div>
+              </div>
+            </div>
+
+            <aside class="manual-output">
+              <div id="manual-result" class="manual-result">
+                <div class="empty">Paste content into a detection card, then run an analysis.</div>
+              </div>
+
+              <div class="manual-history-head">
+                <h3>Recent manual scans</h3>
+                <div class="button-row">
+                  <button id="export-history-btn" class="ghost-btn" type="button">Export report</button>
+                  <button id="clear-history-btn" class="ghost-btn" type="button">Clear view</button>
+                </div>
+              </div>
+              <div id="manual-history" class="manual-history">
+                <div class="empty">Manual scan history will appear here.</div>
+              </div>
+            </aside>
+          </div>
+        </section>
+
+        <section class="work-grid">
+          <article class="panel detail-panel">
+            <div class="panel-head">
+              <div class="section-title">
+                <h2>Selected message</h2>
+                <span id="selected-label" class="pill safe">None</span>
+              </div>
+            </div>
+            <div id="detail-content" class="detail-body">
+              <div class="empty">Select an email from the inbox list to inspect its sender, confidence score, and decision reasons.</div>
+            </div>
+          </article>
+
+          <aside class="panel insight-panel">
+            <section class="insight-block">
+              <h3>Risk distribution</h3>
+              <div id="risk-strip" class="risk-strip" style="--phish-width: 0%; --sus-width: 0%; --safe-width: 100%;">
+                <span></span><span></span><span></span>
+              </div>
+              <div class="legend" style="margin-top: 12px;">
+                <div class="legend-row">
+                  <span class="legend-name"><span class="legend-swatch" style="background: var(--phishing);"></span>Phishing</span>
+                  <strong id="legend-phishing">0</strong>
+                </div>
+                <div class="legend-row">
+                  <span class="legend-name"><span class="legend-swatch" style="background: var(--suspicious);"></span>Suspicious</span>
+                  <strong id="legend-suspicious">0</strong>
+                </div>
+                <div class="legend-row">
+                  <span class="legend-name"><span class="legend-swatch" style="background: var(--safe);"></span>Safe</span>
+                  <strong id="legend-safe">0</strong>
+                </div>
+              </div>
+            </section>
+
+            <section class="insight-block">
+              <h3>Review checklist</h3>
+              <ul class="guidance">
+                <li>Confirm sender domains before replying or opening attachments.</li>
+                <li>Inspect links that use urgency, password reset, payment, or account suspension language.</li>
+                <li>Use the decision reasons to separate model confidence from URL-based evidence.</li>
+                <li>When uncertain, visit the service directly instead of following email links.</li>
+              </ul>
+            </section>
+          </aside>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    const FASTAPI_BASE = "http://127.0.0.1:8001";
+    const API_BASE = window.location.protocol.startsWith("http") && ["8000", "8001"].includes(window.location.port)
+      ? window.location.origin
+      : FASTAPI_BASE;
+
+    const emailList = document.getElementById("email-list");
+    const statusEl = document.getElementById("status");
+    const detailContent = document.getElementById("detail-content");
+    const selectedLabel = document.getElementById("selected-label");
+    const totalCount = document.getElementById("total-count");
+    const phishingCount = document.getElementById("phishing-count");
+    const suspiciousCount = document.getElementById("suspicious-count");
+    const confidenceCount = document.getElementById("confidence-count");
+    const visibleCount = document.getElementById("visible-count");
+    const limitInput = document.getElementById("limit");
+    const refreshBtn = document.getElementById("refresh");
+    const searchInput = document.getElementById("search");
+    const filterTabs = Array.from(document.querySelectorAll(".filter-tab"));
+    const navButtons = Array.from(document.querySelectorAll(".nav-btn"));
+    const dashboardSections = Array.from(document.querySelectorAll(".hero-panel, .metrics, .work-grid"));
+    const detectorPages = document.getElementById("detector-pages");
+    const detectorTitle = document.getElementById("detector-title");
+    const detectorSubtitle = document.getElementById("detector-subtitle");
+    const toolPages = Array.from(document.querySelectorAll("[data-tool-page]"));
+    const healthDot = document.getElementById("health-dot");
+    const healthText = document.getElementById("health-text");
+    const riskStrip = document.getElementById("risk-strip");
+    const legendPhishing = document.getElementById("legend-phishing");
+    const legendSuspicious = document.getElementById("legend-suspicious");
+    const legendSafe = document.getElementById("legend-safe");
+    const manualUrl = document.getElementById("manual-url");
+    const manualSender = document.getElementById("manual-sender");
+    const manualSubject = document.getElementById("manual-subject");
+    const manualBody = document.getElementById("manual-body");
+    const manualLinks = document.getElementById("manual-links");
+    const manualAttachments = document.getElementById("manual-attachments");
+    const manualPage = document.getElementById("manual-page");
+    const manualImage = document.getElementById("manual-image");
+    const manualReplyTo = document.getElementById("manual-reply-to");
+    const manualReturnPath = document.getElementById("manual-return-path");
+    const analyzeUrlBtn = document.getElementById("analyze-url-btn");
+    const analyzeEmailBtn = document.getElementById("analyze-email-btn");
+    const analyzeSenderBtn = document.getElementById("analyze-sender-btn");
+    const analyzeAttachmentsBtn = document.getElementById("analyze-attachments-btn");
+    const analyzePageBtn = document.getElementById("analyze-page-btn");
+    const analyzeImageBtn = document.getElementById("analyze-image-btn");
+    const analyzeFullBtn = document.getElementById("analyze-full-btn");
+    const manualResult = document.getElementById("manual-result");
+    const manualHistory = document.getElementById("manual-history");
+    const exportHistoryBtn = document.getElementById("export-history-btn");
+    const clearHistoryBtn = document.getElementById("clear-history-btn");
+
+    let emails = [];
+    let filteredEmails = [];
+    let manualAnalyses = [];
+    let selectedIndex = -1;
+    let activeFilter = "ALL";
+    let inboxEmptyMessage = "No recent emails were returned from Gmail.";
+    const pageMeta = {
+      dashboard: ["Inbox Threat Overview", "Track scanned emails, manual scan history, and risk distribution."],
+      links: ["URL / Link Detection", "Analyze links without mixing in email, attachment, or webpage fields."],
+      email: ["Email Content Detection", "Analyze sender, subject, and body text only."],
+      sender: ["Sender Information", "Check sender identity, Reply-To, and Return-Path signals."],
+      attachments: ["Attachment Detection", "Check filenames and attachment types for risky patterns."],
+      webpage: ["Webpage Feature Detection", "Analyze pasted webpage text or HTML."],
+      image: ["Image / QR Detection", "Check image notes and QR-code signals."],
+      full: ["Full Multimodal Detection", "Combine all filled sections into one complete scan."],
+    };
+
+    function normalizeLabel(label) {
+      const upper = String(label || "").toUpperCase();
+      if (upper === "PHISHING" || upper === "SUSPICIOUS" || upper === "SAFE") return upper;
+      return "SAFE";
+    }
+
+    function getRiskClass(label) {
+      return normalizeLabel(label).toLowerCase();
+    }
+
+    function asPercent(value, digits = 1) {
+      return (Number(value || 0) * 100).toFixed(digits) + "%";
+    }
+
+    function setText(node, value) {
+      node.textContent = value == null || value === "" ? "Not available" : String(value);
+    }
+
+    function setStatus(text, state = "ready") {
+      statusEl.textContent = text;
+      statusEl.classList.toggle("error-text", state === "error");
+      healthDot.className = "dot " + (state === "error" ? "error" : state === "ready" ? "ready" : "");
+      healthText.textContent = state === "error" ? "Needs attention" : state === "loading" ? "Syncing" : "Operational";
+    }
+
+    function showPage(page) {
+      const nextPage = pageMeta[page] ? page : "dashboard";
+      const isDashboard = nextPage === "dashboard";
+      navButtons.forEach((button) => button.classList.toggle("active", button.dataset.page === nextPage));
+      dashboardSections.forEach((section) => section.classList.toggle("page-hidden", !isDashboard));
+      detectorPages.classList.toggle("page-hidden", isDashboard);
+
+      if (!isDashboard) {
+        detectorTitle.textContent = pageMeta[nextPage][0];
+        detectorSubtitle.textContent = pageMeta[nextPage][1];
+        toolPages.forEach((tool) => tool.classList.toggle("tool-hidden", tool.dataset.toolPage !== nextPage));
+      }
+    }
+
+    function itemMatchesSearch(item, query) {
+      if (!query) return true;
+      const haystack = [item.subject, item.sender, item.snippet, item.label, item.risk].join(" ").toLowerCase();
+      return haystack.includes(query);
+    }
+
+    function getStats(items) {
+      const total = items.length;
+      const phishing = items.filter((e) => normalizeLabel(e.label) === "PHISHING").length;
+      const suspicious = items.filter((e) => normalizeLabel(e.label) === "SUSPICIOUS").length;
+      const safe = items.filter((e) => normalizeLabel(e.label) === "SAFE").length;
+      const avgConfidence = total
+        ? items.reduce((sum, item) => sum + Number(item.confidence || 0), 0) / total
+        : 0;
+      return { total, phishing, suspicious, safe, avgConfidence };
+    }
+
+    function applyFilters() {
+      const query = searchInput.value.trim().toLowerCase();
+      filteredEmails = emails.filter((item) => {
+        const label = normalizeLabel(item.label);
+        const filterMatch = activeFilter === "ALL" || label === activeFilter;
+        return filterMatch && itemMatchesSearch(item, query);
+      });
+
+      if (!filteredEmails.length) {
+        selectedIndex = -1;
+      } else if (selectedIndex < 0 || selectedIndex >= filteredEmails.length) {
+        selectedIndex = 0;
+      }
+
+      renderAll();
+    }
+
+    function getMetricItems() {
+      return manualAnalyses.concat(filteredEmails);
+    }
+
+    function renderStats(items) {
+      const stats = getStats(items);
+      totalCount.textContent = String(stats.total);
+      phishingCount.textContent = String(stats.phishing);
+      suspiciousCount.textContent = String(stats.suspicious);
+      confidenceCount.textContent = asPercent(stats.avgConfidence, 0);
+      legendPhishing.textContent = String(stats.phishing);
+      legendSuspicious.textContent = String(stats.suspicious);
+      legendSafe.textContent = String(stats.safe);
+
+      const phishWidth = stats.total ? (stats.phishing / stats.total) * 100 : 0;
+      const susWidth = stats.total ? (stats.suspicious / stats.total) * 100 : 0;
+      const safeWidth = stats.total ? (stats.safe / stats.total) * 100 : 100;
+      riskStrip.style.setProperty("--phish-width", phishWidth + "%");
+      riskStrip.style.setProperty("--sus-width", susWidth + "%");
+      riskStrip.style.setProperty("--safe-width", safeWidth + "%");
+    }
+
+    function createPill(label) {
+      const pill = document.createElement("span");
+      const cls = getRiskClass(label);
+      pill.className = "pill " + cls;
+      pill.textContent = normalizeLabel(label);
+      return pill;
+    }
+
+    function setManualButtons(disabled) {
+      analyzeUrlBtn.disabled = disabled;
+      analyzeEmailBtn.disabled = disabled;
+      analyzeSenderBtn.disabled = disabled;
+      analyzeAttachmentsBtn.disabled = disabled;
+      analyzePageBtn.disabled = disabled;
+      analyzeImageBtn.disabled = disabled;
+      analyzeFullBtn.disabled = disabled;
+    }
+
+    function renderManualMessage(message, isError = false) {
+      manualResult.textContent = "";
+      const box = document.createElement("div");
+      box.className = isError ? "empty error-text" : "empty";
+      box.textContent = message;
+      manualResult.appendChild(box);
+    }
+
+    function scanTitle(scan) {
+      if (scan.input_type === "url" && scan.url) return scan.url;
+      if (scan.subject) return scan.subject;
+      if (scan.sender) return scan.sender;
+      if (scan.input_type === "webpage") return "Webpage feature scan";
+      if (scan.input_type === "attachments") return "Attachment scan";
+      if (scan.input_type === "image") return "Image / QR scan";
+      if (scan.input_type === "sender") return "Sender information scan";
+      return `${scan.input_type || "manual"} scan`;
+    }
+
+    function renderManualHistory() {
+      manualHistory.textContent = "";
+
+      if (!manualAnalyses.length) {
+        const empty = document.createElement("div");
+        empty.className = "empty";
+        empty.textContent = "Manual scan history will appear here.";
+        manualHistory.appendChild(empty);
+        return;
+      }
+
+      manualAnalyses.slice(0, 25).forEach((scan) => {
+        const item = document.createElement("article");
+        item.className = "history-item";
+
+        const top = document.createElement("div");
+        top.className = "history-topline";
+        const title = document.createElement("div");
+        title.className = "history-title";
+        title.textContent = scanTitle(scan);
+        top.append(title, createPill(scan.label));
+
+        const meta = document.createElement("div");
+        meta.className = "history-meta";
+        const when = scan.created_at ? new Date(scan.created_at).toLocaleString() : "Just now";
+        meta.textContent = `${String(scan.input_type || "manual").toUpperCase()} | ${asPercent(scan.confidence, 0)} | ${when}`;
+
+        const actions = document.createElement("div");
+        actions.className = "button-row";
+        ["SAFE", "SUSPICIOUS", "PHISHING"].forEach((verdict) => {
+          const btn = document.createElement("button");
+          btn.className = "ghost-btn";
+          btn.type = "button";
+          btn.textContent = `Correct: ${verdict}`;
+          btn.disabled = !scan.scan_id && !scan.id;
+          btn.addEventListener("click", () => sendFeedback(scan.scan_id || scan.id, verdict));
+          actions.appendChild(btn);
+        });
+
+        if (scan.user_verdict) {
+          const feedback = document.createElement("div");
+          feedback.className = "history-meta";
+          feedback.textContent = `Feedback saved: ${scan.user_verdict}`;
+          item.append(top, meta, feedback);
+        } else {
+          item.append(top, meta, actions);
+        }
+
+        manualHistory.appendChild(item);
+      });
+    }
+
+    function addManualAnalysis(title, result) {
+      const lowerTitle = title.toLowerCase();
+      const inputType = lowerTitle.includes("link") || lowerTitle.includes("url")
+        ? "url"
+        : lowerTitle.includes("sender")
+          ? "sender"
+          : lowerTitle.includes("attachment")
+            ? "attachments"
+            : lowerTitle.includes("webpage")
+              ? "webpage"
+              : lowerTitle.includes("image") || lowerTitle.includes("qr")
+                ? "image"
+                : lowerTitle.includes("full") || lowerTitle.includes("multimodal")
+                  ? "combined"
+                  : result.input_type || "email";
+      const scan = {
+        scan_id: result.scan_id,
+        id: result.scan_id,
+        source: result.source || "manual",
+        input_type: inputType,
+        label: normalizeLabel(result.label),
+        risk: result.risk_level || "UNKNOWN",
+        risk_level: result.risk_level || "UNKNOWN",
+        confidence: Number(result.confidence || 0),
+        reasons: Array.isArray(result.reasons) ? result.reasons : [],
+        url: result.analyzed_url || manualUrl.value.trim(),
+        domain: result.analyzed_domain || "",
+        subject: manualSubject.value.trim(),
+        sender: manualSender.value.trim(),
+        display_title: title,
+        created_at: new Date().toISOString(),
+      };
+      manualAnalyses = [scan].concat(manualAnalyses.filter((item) => (item.scan_id || item.id) !== scan.scan_id));
+      renderManualHistory();
+      renderStats(getMetricItems());
+    }
+
+    function manualTarget(result, title = "") {
+      const lowerTitle = title.toLowerCase();
+      const inputType = result.input_type || "";
+      const url = result.analyzed_url || manualUrl.value.trim();
+      const domain = result.analyzed_domain || "";
+      const subject = manualSubject.value.trim();
+      const sender = manualSender.value.trim();
+
+      if (lowerTitle.includes("attachment")) {
+        return {
+          label: "Attachments checked",
+          value: manualAttachments.value.trim() || "Submitted attachment list",
+        };
+      }
+
+      if (lowerTitle.includes("webpage")) {
+        return {
+          label: "Webpage checked",
+          value: "Submitted webpage text or HTML",
+        };
+      }
+
+      if (lowerTitle.includes("image") || lowerTitle.includes("qr")) {
+        return {
+          label: "Image / QR checked",
+          value: manualImage.value.trim() || "Submitted image or QR indicators",
+        };
+      }
+
+      if (lowerTitle.includes("sender")) {
+        return {
+          label: "Sender information checked",
+          value: sender || manualReplyTo.value.trim() || manualReturnPath.value.trim() || "Submitted sender details",
+        };
+      }
+
+      if (inputType === "url" || (url && !subject && !sender && !manualBody.value.trim())) {
+        return {
+          label: "Website / URL checked",
+          value: domain ? `${domain} (${url})` : url,
+        };
+      }
+
+      if (inputType === "combined" || url) {
+        return {
+          label: "Email and website checked",
+          value: domain ? `${subject || "Email content"} + ${domain} (${url})` : `${subject || "Email content"} + ${url}`,
+        };
+      }
+
+      return {
+        label: "Email checked",
+        value: subject || sender || "Pasted email content",
+      };
+    }
+
+    function verdictSentence(result, title = "") {
+      const label = normalizeLabel(result.label);
+      const target = manualTarget(result, title);
+      if (label === "PHISHING") return `${target.label}: this is likely PHISHING. Do not open links, enter credentials, or reply.`;
+      if (label === "SUSPICIOUS") return `${target.label}: this looks SUSPICIOUS. Review the reasons before trusting it.`;
+      return `${target.label}: this appears SAFE based on the current model and rules.`;
+    }
+
+    async function loadScanHistory() {
+      try {
+        const response = await fetch(`${API_BASE}/scan-history?limit=25`);
+        if (!response.ok) return;
+        const history = await response.json();
+        manualAnalyses = Array.isArray(history)
+          ? history.map((scan) => ({
+              ...scan,
+              scan_id: scan.id,
+              risk: scan.risk_level,
+              label: normalizeLabel(scan.label),
+              confidence: Number(scan.confidence || 0),
+            }))
+          : [];
+        renderManualHistory();
+        renderStats(getMetricItems());
+      } catch (_) {
+        renderManualHistory();
+      }
+    }
+
+    async function sendFeedback(scanId, verdict) {
+      if (!scanId) return;
+      try {
+        const response = await fetch(`${API_BASE}/scan-feedback`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ scan_id: Number(scanId), verdict }),
+        });
+        if (!response.ok) {
+          const details = await getErrorDetails(response);
+          throw new Error(details || "Feedback could not be saved.");
+        }
+        manualAnalyses = manualAnalyses.map((scan) => {
+          if ((scan.scan_id || scan.id) !== scanId) return scan;
+          return { ...scan, user_verdict: verdict };
+        });
+        renderManualHistory();
+        renderManualMessage(`Feedback saved as ${verdict}. This correction is now stored for retraining.`);
+      } catch (error) {
+        renderManualMessage(error && error.message ? error.message : "Feedback could not be saved.", true);
+      }
+    }
+
+    function exportHistoryReport() {
+      const report = {
+        exported_at: new Date().toISOString(),
+        summary: getStats(getMetricItems()),
+        scans: manualAnalyses,
+      };
+      const blob = new Blob([JSON.stringify(report, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `phishing-scan-report-${Date.now()}.json`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function renderManualResult(title, result) {
+      manualResult.textContent = "";
+
+      const label = normalizeLabel(result.label);
+      addManualAnalysis(title, result);
+
+      const head = document.createElement("div");
+      head.className = "result-head";
+      const heading = document.createElement("div");
+      heading.className = "result-title";
+      heading.textContent = title;
+      head.append(heading, createPill(label));
+
+      const target = manualTarget(result, title);
+      const verdictCard = document.createElement("div");
+      verdictCard.className = "verdict-card";
+      const targetLabel = document.createElement("div");
+      targetLabel.className = "field-label";
+      targetLabel.textContent = target.label;
+      const targetLine = document.createElement("div");
+      targetLine.className = "target-line";
+      targetLine.textContent = target.value;
+      const verdict = document.createElement("div");
+      verdict.className = "verdict-text";
+      verdict.textContent = verdictSentence(result, title);
+      verdictCard.append(targetLabel, targetLine, verdict);
+
+      const grid = document.createElement("div");
+      grid.className = "result-grid";
+      const resultFields = [
+        ["Risk level", String(result.risk_level || "UNKNOWN").toUpperCase()],
+        ["Confidence", asPercent(result.confidence, 2)],
+      ];
+
+      if (result.analyzed_domain) resultFields.push(["Domain", result.analyzed_domain]);
+      if (result.url_label) resultFields.push(["URL verdict", result.url_label]);
+      if (result.email_label) resultFields.push(["Email verdict", result.email_label]);
+      if (result.feature_summary) {
+        const summary = result.feature_summary;
+        resultFields.push(["Links found", String(summary.link_count || 0)]);
+        resultFields.push(["Attachments", String(summary.attachment_count || 0)]);
+        resultFields.push(["Images / QR", `${summary.image_count || 0} / ${summary.qr_signal_count || 0}`]);
+      }
+
+      resultFields.forEach(([labelText, value]) => {
+        const field = document.createElement("div");
+        field.className = "field";
+        const fieldLabel = document.createElement("div");
+        fieldLabel.className = "field-label";
+        fieldLabel.textContent = labelText;
+        const fieldValue = document.createElement("div");
+        fieldValue.className = "field-value";
+        fieldValue.textContent = value;
+        field.append(fieldLabel, fieldValue);
+        grid.appendChild(field);
+      });
+
+      const reasonsLabel = document.createElement("div");
+      reasonsLabel.className = "field-label";
+      reasonsLabel.style.marginTop = "12px";
+      reasonsLabel.textContent = "Decision reasons";
+
+      const reasons = document.createElement("ul");
+      reasons.className = "reason-list";
+      const reasonList = Array.isArray(result.reasons) && result.reasons.length
+        ? result.reasons
+        : ["No additional explanation available."];
+      reasonList.forEach((reason) => {
+        const li = document.createElement("li");
+        li.textContent = String(reason);
+        reasons.appendChild(li);
+      });
+
+      manualResult.append(head, verdictCard, grid, reasonsLabel, reasons);
+    }
+
+    async function getErrorDetails(response) {
+      const body = await response.text();
+      if (!body) return "";
+
+      try {
+        const errorData = JSON.parse(body);
+        return errorData.detail || errorData.details || errorData.error || body;
+      } catch (_) {
+        return body;
+      }
+    }
+
+    async function postAnalysis(endpoint, payload, title) {
+      setManualButtons(true);
+      renderManualMessage("Analyzing with the detection model...");
+
+      try {
+        const response = await fetch(`${API_BASE}${endpoint}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+          const details = await getErrorDetails(response);
+          throw new Error(`Request failed with status ${response.status}${details ? `: ${details}` : ""}`);
+        }
+
+        const result = await response.json();
+        renderManualResult(title, result);
+      } catch (error) {
+        const message = error && error.message
+          ? error.message
+          : "Unable to analyze. Ensure the FastAPI server is running.";
+        renderManualMessage(message, true);
+      } finally {
+        setManualButtons(false);
+      }
+    }
+
+    function getManualPayload() {
+      const parseLines = (value) => String(value || "")
+        .split(/\n|,/)
+        .map((item) => item.trim())
+        .filter(Boolean);
+
+      return {
+        subject: manualSubject.value.trim(),
+        sender: manualSender.value.trim(),
+        body: manualBody.value.trim(),
+        url: manualUrl.value.trim(),
+        links: parseLines(manualLinks.value),
+        attachments: parseLines(manualAttachments.value),
+        reply_to: manualReplyTo.value.trim(),
+        return_path: manualReturnPath.value.trim(),
+        webpage_text: manualPage.value.trim(),
+        image_indicators: parseLines(manualImage.value),
+        qr_text: manualImage.value.trim(),
+      };
+    }
+
+    function clearFields(fields) {
+      fields.forEach((field) => {
+        if (field) field.value = "";
+      });
+    }
+
+    function clearSectionsExcept(section) {
+      const groups = {
+        links: [manualUrl, manualLinks],
+        email: [manualSender, manualSubject, manualBody],
+        sender: [manualSender, manualReplyTo, manualReturnPath],
+        attachments: [manualAttachments],
+        webpage: [manualPage],
+        image: [manualImage],
+      };
+
+      Object.entries(groups).forEach(([name, fields]) => {
+        if (name !== section) clearFields(fields);
+      });
+    }
+
+    function analyzeManualUrl() {
+      const payload = getManualPayload();
+      const firstUrl = payload.url || payload.links[0] || "";
+      if (!firstUrl) {
+        renderManualMessage("Paste a URL or link first, then run link analysis.", true);
+        manualUrl.focus();
+        return;
+      }
+      clearSectionsExcept("links");
+      postAnalysis("/analyze-url", { url: firstUrl }, "Link analysis result");
+    }
+
+    function analyzeManualEmail() {
+      const payload = getManualPayload();
+      if (!payload.subject && !payload.body && !payload.sender) {
+        renderManualMessage("Paste email sender, subject, or body first, then run email analysis.", true);
+        manualBody.focus();
+        return;
+      }
+      clearSectionsExcept("email");
+      postAnalysis("/analyze-email", {
+        subject: payload.subject,
+        sender: payload.sender,
+        body: payload.body,
+      }, "Email analysis result");
+    }
+
+    function analyzeManualSender() {
+      const payload = getManualPayload();
+      if (!payload.sender && !payload.reply_to && !payload.return_path) {
+        renderManualMessage("Add sender, Reply-To, or Return-Path first.", true);
+        manualSender.focus();
+        return;
+      }
+      clearSectionsExcept("sender");
+      postAnalysis("/analyze-email", {
+        sender: payload.sender,
+        reply_to: payload.reply_to,
+        return_path: payload.return_path,
+      }, "Sender analysis result");
+    }
+
+    function analyzeManualAttachments() {
+      const payload = getManualPayload();
+      if (!payload.attachments.length) {
+        renderManualMessage("Add attachment names first, then run attachment analysis.", true);
+        manualAttachments.focus();
+        return;
+      }
+      clearSectionsExcept("attachments");
+      postAnalysis("/analyze-email", {
+        attachments: payload.attachments,
+      }, "Attachment analysis result");
+    }
+
+    function analyzeManualPage() {
+      const payload = getManualPayload();
+      if (!payload.webpage_text) {
+        renderManualMessage("Paste webpage text or HTML first.", true);
+        manualPage.focus();
+        return;
+      }
+      clearSectionsExcept("webpage");
+      postAnalysis("/analyze-email", {
+        webpage_text: payload.webpage_text,
+      }, "Webpage feature analysis result");
+    }
+
+    function analyzeManualImage() {
+      const payload = getManualPayload();
+      if (!payload.image_indicators.length && !payload.qr_text) {
+        renderManualMessage("Add image or QR notes first.", true);
+        manualImage.focus();
+        return;
+      }
+      clearSectionsExcept("image");
+      postAnalysis("/analyze-email", {
+        image_indicators: payload.image_indicators,
+        qr_text: payload.qr_text,
+      }, "Image / QR analysis result");
+    }
+
+    function analyzeManualFull() {
+      const payload = getManualPayload();
+      const hasAnySignal = payload.url || payload.links.length || payload.subject || payload.body || payload.sender
+        || payload.reply_to || payload.return_path || payload.attachments.length || payload.webpage_text || payload.image_indicators.length;
+      if (!hasAnySignal) {
+        renderManualMessage("Fill at least one detection section first.", true);
+        return;
+      }
+      if (!payload.url && payload.links.length) payload.url = payload.links[0];
+      if (payload.url) {
+        postAnalysis("/analyze-full", payload, "Full multimodal analysis result");
+        return;
+      }
+      postAnalysis("/analyze-email", payload, "Full multimodal analysis result");
+    }
+
+    function renderDetail(item) {
+      detailContent.textContent = "";
+
+      if (!item) {
+        selectedLabel.className = "pill safe";
+        selectedLabel.textContent = "None";
+        const empty = document.createElement("div");
+        empty.className = "empty";
+        empty.textContent = emails.length
+          ? "No emails match the current search or risk filter."
+          : "Select an email from the inbox list to inspect its sender, confidence score, and decision reasons.";
+        detailContent.appendChild(empty);
+        return;
+      }
+
+      const label = normalizeLabel(item.label);
+      selectedLabel.className = "pill " + getRiskClass(label);
+      selectedLabel.textContent = label;
+
+      const titleWrap = document.createElement("div");
+      titleWrap.className = "detail-title";
+
+      const titleText = document.createElement("div");
+      const eyebrow = document.createElement("div");
+      eyebrow.className = "field-label";
+      eyebrow.textContent = "Subject";
+      const subject = document.createElement("div");
+      subject.className = "subject";
+      setText(subject, item.subject || "(no subject)");
+      titleText.append(eyebrow, subject);
+      titleWrap.append(titleText, createPill(label));
+
+      const metaGrid = document.createElement("div");
+      metaGrid.className = "meta-grid";
+      [
+        ["Sender", item.sender || "(unknown)"],
+        ["Risk level", String(item.risk || "UNKNOWN").toUpperCase()],
+        ["Confidence", asPercent(item.confidence, 2)],
+        ["Model label", label],
+      ].forEach(([labelText, value]) => {
+        const field = document.createElement("div");
+        field.className = "field";
+        const fieldLabel = document.createElement("div");
+        fieldLabel.className = "field-label";
+        fieldLabel.textContent = labelText;
+        const fieldValue = document.createElement("div");
+        fieldValue.className = "field-value";
+        setText(fieldValue, value);
+        field.append(fieldLabel, fieldValue);
+        metaGrid.appendChild(field);
+      });
+
+      const snippetLabel = document.createElement("div");
+      snippetLabel.className = "field-label";
+      snippetLabel.style.marginTop = "14px";
+      snippetLabel.textContent = "Body snippet";
+      const snippet = document.createElement("div");
+      snippet.className = "snippet-box";
+      setText(snippet, item.snippet || "(no content)");
+
+      const reasonsLabel = document.createElement("div");
+      reasonsLabel.className = "field-label";
+      reasonsLabel.style.marginTop = "14px";
+      reasonsLabel.textContent = "Decision reasons";
+      const reasons = document.createElement("ul");
+      reasons.className = "reason-list";
+      const reasonList = Array.isArray(item.reasons) && item.reasons.length
+        ? item.reasons
+        : ["No additional explanation available."];
+      reasonList.forEach((reason) => {
+        const li = document.createElement("li");
+        li.textContent = String(reason);
+        reasons.appendChild(li);
+      });
+
+      detailContent.append(titleWrap, metaGrid, snippetLabel, snippet, reasonsLabel, reasons);
+    }
+
+    function renderList(items) {
+      emailList.textContent = "";
+
+      if (!items.length) {
+        const empty = document.createElement("div");
+        empty.className = "empty";
+        empty.textContent = emails.length
+          ? "No emails match the current filters."
+          : inboxEmptyMessage;
+        emailList.appendChild(empty);
+        renderDetail(null);
+        return;
+      }
+
+      items.forEach((item, index) => {
+        const entry = document.createElement("article");
+        const cls = getRiskClass(item.label);
+        entry.className = "email-item " + cls + (index === selectedIndex ? " active" : "");
+        entry.tabIndex = 0;
+
+        const topLine = document.createElement("div");
+        topLine.className = "email-topline";
+        const subject = document.createElement("h3");
+        subject.textContent = item.subject || "(no subject)";
+        topLine.append(subject, createPill(item.label));
+
+        const meta = document.createElement("div");
+        meta.className = "email-meta";
+        meta.textContent = `${item.sender || "(unknown)"} | ${String(item.risk || "UNKNOWN").toUpperCase()} | ${asPercent(item.confidence, 0)}`;
+
+        const snippet = document.createElement("div");
+        snippet.className = "email-snippet";
+        snippet.textContent = item.snippet || "(no snippet)";
+
+        entry.append(topLine, meta, snippet);
+        entry.addEventListener("click", () => {
+          selectedIndex = index;
+          renderAll();
+        });
+        entry.addEventListener("keydown", (event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            selectedIndex = index;
+            renderAll();
+          }
+        });
+
+        emailList.appendChild(entry);
+      });
+    }
+
+    function renderAll() {
+      visibleCount.textContent = String(filteredEmails.length);
+      renderStats(getMetricItems());
+      renderList(filteredEmails);
+      renderDetail(filteredEmails[selectedIndex]);
+    }
+
+    async function fetchEmails() {
+      const limit = Math.max(1, Math.min(100, Number(limitInput.value || 20)));
+      limitInput.value = String(limit);
+      refreshBtn.disabled = true;
+      setStatus("Fetching and analyzing recent Gmail messages...", "loading");
+
+      try {
+        const response = await fetch(`${API_BASE}/emails?limit=${limit}`);
+        if (!response.ok) {
+          const details = await getErrorDetails(response);
+          throw new Error(`Request failed with status ${response.status}${details ? `: ${details}` : ""}`);
+        }
+
+        const data = await response.json();
+        emails = Array.isArray(data) ? data : [];
+        inboxEmptyMessage = "No recent emails were returned from Gmail.";
+        selectedIndex = emails.length ? 0 : -1;
+        applyFilters();
+        setStatus(`Loaded ${emails.length} analyzed emails from Gmail.`, "ready");
+      } catch (error) {
+        emails = [];
+        filteredEmails = [];
+        selectedIndex = -1;
+        const baseMessage = error && error.message
+          ? error.message
+          : "Unable to load /emails. Ensure FastAPI server and Gmail credentials are configured.";
+        const gmailAuthMissing = baseMessage.includes("Missing Gmail auth files");
+        inboxEmptyMessage = gmailAuthMissing
+          ? "Gmail inbox sync is not configured yet. Manual email and URL analysis is available above."
+          : "Inbox sync could not load. Manual email and URL analysis is available above.";
+        renderAll();
+        if (gmailAuthMissing) {
+          setStatus("Manual analysis is ready. Add Gmail credentials and token files to enable inbox scanning.", "ready");
+          return;
+        }
+        const hint = window.location.protocol === "file:"
+          ? " Open this dashboard through http://127.0.0.1:8000/dashboard-ui."
+          : "";
+        setStatus(baseMessage + hint, "error");
+      } finally {
+        refreshBtn.disabled = false;
+      }
+    }
+
+    refreshBtn.addEventListener("click", fetchEmails);
+    navButtons.forEach((button) => {
+      button.addEventListener("click", () => showPage(button.dataset.page || "dashboard"));
+    });
+    analyzeUrlBtn.addEventListener("click", analyzeManualUrl);
+    analyzeEmailBtn.addEventListener("click", analyzeManualEmail);
+    analyzeSenderBtn.addEventListener("click", analyzeManualSender);
+    analyzeAttachmentsBtn.addEventListener("click", analyzeManualAttachments);
+    analyzePageBtn.addEventListener("click", analyzeManualPage);
+    analyzeImageBtn.addEventListener("click", analyzeManualImage);
+    analyzeFullBtn.addEventListener("click", analyzeManualFull);
+    exportHistoryBtn.addEventListener("click", exportHistoryReport);
+    clearHistoryBtn.addEventListener("click", () => {
+      manualAnalyses = [];
+      renderManualHistory();
+      renderStats(getMetricItems());
+    });
+    searchInput.addEventListener("input", applyFilters);
+    filterTabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        activeFilter = tab.dataset.filter || "ALL";
+        filterTabs.forEach((item) => item.classList.toggle("active", item === tab));
+        selectedIndex = 0;
+        applyFilters();
+      });
+    });
+
+    loadScanHistory();
+    showPage("dashboard");
+    fetchEmails();
+  </script>
+</body>
+</html>
