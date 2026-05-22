@@ -6,7 +6,7 @@
   <title>Phishing Detection Dashboard</title>
   <style>
     :root {
-      --bg: #f6f8fb;
+      --bg: #eef3f8;
       --surface: #ffffff;
       --surface-soft: #f9fbfd;
       --ink: #17202a;
@@ -21,6 +21,8 @@
       --phishing: #c93434;
       --phishing-soft: #fde8e8;
       --info: #2563eb;
+      --deep: #102033;
+      --accent: #14b8a6;
       --shadow: 0 10px 24px rgba(24, 39, 55, 0.06);
     }
 
@@ -32,7 +34,11 @@
       margin: 0;
       min-height: 100vh;
       color: var(--ink);
-      background: linear-gradient(180deg, #f8fafc 0%, var(--bg) 240px);
+      background:
+        linear-gradient(90deg, rgba(37, 99, 235, 0.04) 1px, transparent 1px),
+        linear-gradient(180deg, rgba(20, 184, 166, 0.04) 1px, transparent 1px),
+        linear-gradient(180deg, #f8fafc 0%, var(--bg) 260px);
+      background-size: 28px 28px, 28px 28px, auto;
       font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
       letter-spacing: 0;
     }
@@ -104,8 +110,8 @@
       position: sticky;
       top: 0;
       z-index: 10;
-      border-bottom: 1px solid var(--line);
-      background: rgba(255, 255, 255, 0.94);
+      border-bottom: 1px solid #c9d8e8;
+      background: rgba(255, 255, 255, 0.96);
       backdrop-filter: blur(14px);
     }
 
@@ -132,9 +138,10 @@
       border-radius: 8px;
       display: grid;
       place-items: center;
-      background: #16212d;
+      background: linear-gradient(135deg, var(--deep), #1f5fbf);
       color: #fff;
       font-weight: 800;
+      box-shadow: 0 8px 18px rgba(16, 32, 51, 0.18);
     }
 
     h1,
@@ -182,15 +189,27 @@
       color: #174d8f;
       border-color: #9eb8d6;
       background: #eaf2fb;
+      box-shadow: inset 0 -2px 0 var(--info);
     }
 
     .limit-control {
       width: 92px;
     }
 
+    .limit-control,
+    #refresh {
+      display: none !important;
+    }
+
+    .file-input {
+      min-height: 38px;
+      padding: 6px 8px;
+      background: var(--surface);
+    }
+
     .primary-btn {
       border-color: #1f5fbf;
-      background: #2563eb;
+      background: linear-gradient(135deg, #2563eb, #174d8f);
       color: #fff;
       font-weight: 700;
       padding: 0 14px;
@@ -206,9 +225,14 @@
       margin: 0 auto;
       padding: 20px;
       display: grid;
-      grid-template-columns: 330px minmax(0, 1fr);
+      grid-template-columns: minmax(0, 1fr);
       gap: 16px;
       min-height: 0;
+    }
+
+    .inbox-panel,
+    .work-grid {
+      display: none !important;
     }
 
     .panel {
@@ -216,6 +240,7 @@
       border-radius: 8px;
       background: var(--surface);
       box-shadow: var(--shadow);
+      backdrop-filter: blur(6px);
     }
 
     .inbox-panel {
@@ -376,6 +401,7 @@
       grid-template-columns: minmax(0, 1fr) auto;
       align-items: center;
       gap: 16px;
+      border-top: 3px solid var(--accent);
     }
 
     .hero-panel h2 {
@@ -441,6 +467,23 @@
       display: grid;
       align-content: space-between;
       gap: 10px;
+      border-top: 3px solid transparent;
+    }
+
+    .metric:nth-child(1) {
+      border-top-color: var(--info);
+    }
+
+    .metric:nth-child(2) {
+      border-top-color: var(--phishing);
+    }
+
+    .metric:nth-child(3) {
+      border-top-color: var(--suspicious);
+    }
+
+    .metric:nth-child(4) {
+      border-top-color: var(--accent);
     }
 
     .metric-label {
@@ -462,9 +505,17 @@
       line-height: 1.35;
     }
 
+    .dashboard-history-panel {
+      padding: 16px;
+      display: grid;
+      gap: 12px;
+      border-top: 3px solid #2563eb;
+    }
+
     .manual-panel {
       padding: 0;
       overflow: hidden;
+      border-top: 3px solid #2563eb;
     }
 
     .manual-panel > .section-title {
@@ -500,6 +551,7 @@
       display: grid;
       gap: 9px;
       min-height: 100%;
+      border-left: 4px solid var(--info);
     }
 
     .manual-box h3 {
@@ -615,6 +667,10 @@
       overflow: auto;
     }
 
+    .dashboard-history {
+      max-height: 420px;
+    }
+
     .history-item {
       border: 1px solid var(--line);
       border-radius: 8px;
@@ -622,6 +678,7 @@
       padding: 10px;
       display: grid;
       gap: 7px;
+      border-left: 4px solid var(--line-strong);
     }
 
     .history-topline {
@@ -947,7 +1004,7 @@
 
       .topbar-actions {
         display: grid;
-        grid-template-columns: 92px minmax(0, 1fr);
+        grid-template-columns: 1fr;
       }
 
       .metrics,
@@ -975,7 +1032,7 @@
           <div class="brand-mark" aria-hidden="true">PD</div>
           <div>
             <h1>Phishing Detection</h1>
-            <p class="subtitle">Gmail security dashboard</p>
+            <p class="subtitle">Multimodal phishing dashboard</p>
           </div>
         </div>
         <div class="topbar-actions">
@@ -983,11 +1040,9 @@
             <button class="nav-btn active" type="button" data-page="dashboard">Dashboard</button>
             <button class="nav-btn" type="button" data-page="links">Links</button>
             <button class="nav-btn" type="button" data-page="email">Email</button>
-            <button class="nav-btn" type="button" data-page="sender">Sender</button>
             <button class="nav-btn" type="button" data-page="attachments">Attachments</button>
             <button class="nav-btn" type="button" data-page="webpage">Webpage</button>
             <button class="nav-btn" type="button" data-page="image">Image / QR</button>
-            <button class="nav-btn" type="button" data-page="full">Full Scan</button>
           </nav>
           <input id="limit" class="limit-control" type="number" min="1" max="100" value="20" aria-label="Email fetch limit" />
           <button id="refresh" class="primary-btn" type="button">Refresh inbox</button>
@@ -1021,8 +1076,8 @@
       <main class="dashboard">
         <section class="panel hero-panel">
           <div>
-            <h2>Inbox Threat Overview</h2>
-            <div id="status" class="status">Loading emails...</div>
+            <h2>Phishing Scan Overview</h2>
+            <div id="status" class="status">Manual analysis is ready.</div>
           </div>
           <div class="health-card">
             <div class="health-label">System status</div>
@@ -1034,7 +1089,7 @@
           <article class="panel metric">
             <div class="metric-label">Total scanned</div>
             <div id="total-count" class="metric-value">0</div>
-            <div class="metric-note">Messages returned by Gmail</div>
+            <div class="metric-note">Manual scans tracked</div>
           </article>
           <article class="panel metric">
             <div class="metric-label">High risk</div>
@@ -1051,6 +1106,22 @@
             <div id="confidence-count" class="metric-value">0%</div>
             <div class="metric-note">Across visible results</div>
           </article>
+        </section>
+
+        <section class="panel dashboard-history-panel" id="dashboard-history-panel" aria-label="All recent scans">
+          <div class="manual-history-head">
+            <div>
+              <h2>Recent scans</h2>
+              <p class="subtitle">All manual scans from every detector page.</p>
+            </div>
+            <div class="button-row">
+              <button id="export-dashboard-json-btn" class="ghost-btn" type="button">Export JSON</button>
+              <button id="export-dashboard-text-btn" class="ghost-btn" type="button">Export text</button>
+            </div>
+          </div>
+          <div id="dashboard-history" class="manual-history dashboard-history">
+            <div class="empty">Recent scans will appear here after analysis.</div>
+          </div>
         </section>
 
         <section class="panel manual-panel page-hidden" id="detector-pages" aria-label="Manual phishing analysis">
@@ -1097,7 +1168,7 @@
                 </div>
               </div>
 
-              <div class="manual-box" data-tool-page="sender">
+              <div class="manual-box tool-hidden" data-tool-page="sender">
                 <h3>Sender information</h3>
                 <div class="mini-grid">
                   <div class="form-row">
@@ -1116,6 +1187,10 @@
 
               <div class="manual-box" data-tool-page="attachments">
                 <h3>Attachment detection</h3>
+                <div class="form-row">
+                  <label class="form-label" for="manual-attachment-files">Browse files</label>
+                  <input id="manual-attachment-files" class="file-input" type="file" multiple />
+                </div>
                 <div class="form-row">
                   <label class="form-label" for="manual-attachments">Attachments</label>
                   <textarea id="manual-attachments" placeholder="invoice.pdf&#10;scan-qr.png&#10;update.exe"></textarea>
@@ -1139,6 +1214,10 @@
               <div class="manual-box" data-tool-page="image">
                 <h3>Image / QR detection</h3>
                 <div class="form-row">
+                  <label class="form-label" for="manual-image-files">Browse image / QR files</label>
+                  <input id="manual-image-files" class="file-input" type="file" accept="image/*" multiple />
+                </div>
+                <div class="form-row">
                   <label class="form-label" for="manual-image">Image or QR notes</label>
                   <textarea id="manual-image" placeholder="Example: QR code asks user to verify account"></textarea>
                 </div>
@@ -1147,7 +1226,7 @@
                 </div>
               </div>
 
-              <div class="manual-box wide" data-tool-page="full">
+              <div class="manual-box wide tool-hidden" data-tool-page="full">
                 <h3>Full multimodal detection</h3>
                 <p class="subtitle">Uses all filled fields together: email, links, sender details, attachments, webpage features, images, and QR signals.</p>
                 <div class="section-actions">
@@ -1162,10 +1241,10 @@
               </div>
 
               <div class="manual-history-head">
-                <h3>Recent manual scans</h3>
+                <h3 id="section-history-title">Recent scans</h3>
                 <div class="button-row">
-                  <button id="export-history-btn" class="ghost-btn" type="button">Export report</button>
-                  <button id="clear-history-btn" class="ghost-btn" type="button">Clear view</button>
+                  <button id="export-history-json-btn" class="ghost-btn" type="button">Export JSON</button>
+                  <button id="export-history-text-btn" class="ghost-btn" type="button">Export text</button>
                 </div>
               </div>
               <div id="manual-history" class="manual-history">
@@ -1226,7 +1305,7 @@
   </div>
 
   <script>
-    const FASTAPI_BASE = "http://127.0.0.1:8001";
+    const FASTAPI_BASE = "http://127.0.0.1:8000";
     const API_BASE = window.location.protocol.startsWith("http") && ["8000", "8001"].includes(window.location.port)
       ? window.location.origin
       : FASTAPI_BASE;
@@ -1245,7 +1324,7 @@
     const searchInput = document.getElementById("search");
     const filterTabs = Array.from(document.querySelectorAll(".filter-tab"));
     const navButtons = Array.from(document.querySelectorAll(".nav-btn"));
-    const dashboardSections = Array.from(document.querySelectorAll(".hero-panel, .metrics, .work-grid"));
+    const dashboardSections = Array.from(document.querySelectorAll(".hero-panel, .metrics, #dashboard-history-panel"));
     const detectorPages = document.getElementById("detector-pages");
     const detectorTitle = document.getElementById("detector-title");
     const detectorSubtitle = document.getElementById("detector-subtitle");
@@ -1262,8 +1341,10 @@
     const manualBody = document.getElementById("manual-body");
     const manualLinks = document.getElementById("manual-links");
     const manualAttachments = document.getElementById("manual-attachments");
+    const manualAttachmentFiles = document.getElementById("manual-attachment-files");
     const manualPage = document.getElementById("manual-page");
     const manualImage = document.getElementById("manual-image");
+    const manualImageFiles = document.getElementById("manual-image-files");
     const manualReplyTo = document.getElementById("manual-reply-to");
     const manualReturnPath = document.getElementById("manual-return-path");
     const analyzeUrlBtn = document.getElementById("analyze-url-btn");
@@ -1275,24 +1356,29 @@
     const analyzeFullBtn = document.getElementById("analyze-full-btn");
     const manualResult = document.getElementById("manual-result");
     const manualHistory = document.getElementById("manual-history");
-    const exportHistoryBtn = document.getElementById("export-history-btn");
-    const clearHistoryBtn = document.getElementById("clear-history-btn");
+    const dashboardHistory = document.getElementById("dashboard-history");
+    const sectionHistoryTitle = document.getElementById("section-history-title");
+    const exportHistoryJsonBtn = document.getElementById("export-history-json-btn");
+    const exportHistoryTextBtn = document.getElementById("export-history-text-btn");
+    const exportDashboardJsonBtn = document.getElementById("export-dashboard-json-btn");
+    const exportDashboardTextBtn = document.getElementById("export-dashboard-text-btn");
 
     let emails = [];
     let filteredEmails = [];
     let manualAnalyses = [];
+    let resultHtmlByPage = {};
     let selectedIndex = -1;
     let activeFilter = "ALL";
     let inboxEmptyMessage = "No recent emails were returned from Gmail.";
+    let currentPage = "dashboard";
+    const STORAGE_KEY = "phishing-dashboard-state-v2";
     const pageMeta = {
       dashboard: ["Inbox Threat Overview", "Track scanned emails, manual scan history, and risk distribution."],
       links: ["URL / Link Detection", "Analyze links without mixing in email, attachment, or webpage fields."],
       email: ["Email Content Detection", "Analyze sender, subject, and body text only."],
-      sender: ["Sender Information", "Check sender identity, Reply-To, and Return-Path signals."],
       attachments: ["Attachment Detection", "Check filenames and attachment types for risky patterns."],
       webpage: ["Webpage Feature Detection", "Analyze pasted webpage text or HTML."],
       image: ["Image / QR Detection", "Check image notes and QR-code signals."],
-      full: ["Full Multimodal Detection", "Combine all filled sections into one complete scan."],
     };
 
     function normalizeLabel(label) {
@@ -1322,6 +1408,7 @@
 
     function showPage(page) {
       const nextPage = pageMeta[page] ? page : "dashboard";
+      currentPage = nextPage;
       const isDashboard = nextPage === "dashboard";
       navButtons.forEach((button) => button.classList.toggle("active", button.dataset.page === nextPage));
       dashboardSections.forEach((section) => section.classList.toggle("page-hidden", !isDashboard));
@@ -1330,8 +1417,26 @@
       if (!isDashboard) {
         detectorTitle.textContent = pageMeta[nextPage][0];
         detectorSubtitle.textContent = pageMeta[nextPage][1];
+        sectionHistoryTitle.textContent = `${pageMeta[nextPage][0]} recent scans`;
         toolPages.forEach((tool) => tool.classList.toggle("tool-hidden", tool.dataset.toolPage !== nextPage));
+        renderStoredResultForPage(nextPage);
       }
+      renderManualHistory();
+      persistState();
+    }
+
+    function keepCurrentPage() {
+      showPage(currentPage);
+    }
+
+    function defaultResultHtml(page) {
+      const label = pageMeta[page] ? pageMeta[page][0] : "this detector";
+      return `<div class="empty">Run a ${label} scan to see the analysis report here.</div>`;
+    }
+
+    function renderStoredResultForPage(page) {
+      if (!manualResult || page === "dashboard") return;
+      manualResult.innerHTML = resultHtmlByPage[page] || defaultResultHtml(page);
     }
 
     function itemMatchesSearch(item, query) {
@@ -1408,12 +1513,47 @@
       analyzeFullBtn.disabled = disabled;
     }
 
-    function renderManualMessage(message, isError = false) {
+    function renderManualMessage(message, isError = false, persist = true, page = currentPage) {
       manualResult.textContent = "";
       const box = document.createElement("div");
       box.className = isError ? "empty error-text" : "empty";
       box.textContent = message;
       manualResult.appendChild(box);
+      if (page !== "dashboard") {
+        resultHtmlByPage[page] = manualResult.innerHTML;
+      }
+      if (persist) persistState();
+    }
+
+    function persistState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          currentPage,
+          manualAnalyses,
+          resultHtmlByPage,
+        }));
+      } catch (_) {}
+    }
+
+    function restoreState() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+        if (Array.isArray(saved.manualAnalyses)) {
+          manualAnalyses = saved.manualAnalyses.map((scan) => ({
+            ...scan,
+            label: normalizeLabel(scan.label),
+            confidence: Number(scan.confidence || 0),
+          }));
+          renderManualHistory();
+          renderStats(getMetricItems());
+        }
+        resultHtmlByPage = saved.resultHtmlByPage && typeof saved.resultHtmlByPage === "object"
+          ? saved.resultHtmlByPage
+          : {};
+        showPage(saved.currentPage || "dashboard");
+      } catch (_) {
+        showPage("dashboard");
+      }
     }
 
     function scanTitle(scan) {
@@ -1427,18 +1567,32 @@
       return `${scan.input_type || "manual"} scan`;
     }
 
-    function renderManualHistory() {
-      manualHistory.textContent = "";
+    function scansForPage(page) {
+      if (page === "dashboard") return manualAnalyses;
+      const wanted = {
+        links: "url",
+        email: "email",
+        attachments: "attachments",
+        webpage: "webpage",
+        image: "image",
+      }[page];
+      if (!wanted) return [];
+      return manualAnalyses.filter((scan) => String(scan.input_type || "").toLowerCase() === wanted);
+    }
 
-      if (!manualAnalyses.length) {
+    function renderHistoryList(container, scans, emptyMessage) {
+      if (!container) return;
+      container.textContent = "";
+
+      if (!scans.length) {
         const empty = document.createElement("div");
         empty.className = "empty";
-        empty.textContent = "Manual scan history will appear here.";
-        manualHistory.appendChild(empty);
+        empty.textContent = emptyMessage;
+        container.appendChild(empty);
         return;
       }
 
-      manualAnalyses.slice(0, 25).forEach((scan) => {
+      scans.slice(0, 25).forEach((scan) => {
         const item = document.createElement("article");
         item.className = "history-item";
 
@@ -1462,7 +1616,11 @@
           btn.type = "button";
           btn.textContent = `Correct: ${verdict}`;
           btn.disabled = !scan.scan_id && !scan.id;
-          btn.addEventListener("click", () => sendFeedback(scan.scan_id || scan.id, verdict));
+          btn.addEventListener("click", (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            sendFeedback(scan.scan_id || scan.id, verdict);
+          });
           actions.appendChild(btn);
         });
 
@@ -1475,8 +1633,21 @@
           item.append(top, meta, actions);
         }
 
-        manualHistory.appendChild(item);
+        container.appendChild(item);
       });
+    }
+
+    function renderManualHistory() {
+      renderHistoryList(
+        dashboardHistory,
+        manualAnalyses,
+        "Recent scans from all detector pages will appear here."
+      );
+      renderHistoryList(
+        manualHistory,
+        scansForPage(currentPage),
+        "Recent scans for this detector will appear here."
+      );
     }
 
     function addManualAnalysis(title, result) {
@@ -1514,6 +1685,8 @@
       manualAnalyses = [scan].concat(manualAnalyses.filter((item) => (item.scan_id || item.id) !== scan.scan_id));
       renderManualHistory();
       renderStats(getMetricItems());
+      keepCurrentPage();
+      persistState();
     }
 
     function manualTarget(result, title = "") {
@@ -1585,7 +1758,7 @@
         const response = await fetch(`${API_BASE}/scan-history?limit=25`);
         if (!response.ok) return;
         const history = await response.json();
-        manualAnalyses = Array.isArray(history)
+        const serverScans = Array.isArray(history)
           ? history.map((scan) => ({
               ...scan,
               scan_id: scan.id,
@@ -1594,15 +1767,25 @@
               confidence: Number(scan.confidence || 0),
             }))
           : [];
+        const byId = new Map();
+        serverScans.forEach((scan) => byId.set(scan.scan_id || scan.id || `${scan.created_at}-${scan.subject}`, scan));
+        manualAnalyses.forEach((scan) => {
+          const key = scan.scan_id || scan.id || `${scan.created_at}-${scan.subject}`;
+          byId.set(key, { ...(byId.get(key) || {}), ...scan });
+        });
+        manualAnalyses = Array.from(byId.values());
         renderManualHistory();
         renderStats(getMetricItems());
+        keepCurrentPage();
       } catch (_) {
         renderManualHistory();
+        keepCurrentPage();
       }
     }
 
     async function sendFeedback(scanId, verdict) {
       if (!scanId) return;
+      const pageBeforeAction = currentPage;
       try {
         const response = await fetch(`${API_BASE}/scan-feedback`, {
           method: "POST",
@@ -1618,30 +1801,100 @@
           return { ...scan, user_verdict: verdict };
         });
         renderManualHistory();
-        renderManualMessage(`Feedback saved as ${verdict}. This correction is now stored for retraining.`);
+        showPage(pageBeforeAction);
+        renderManualMessage(`Feedback saved as ${verdict}. This correction is now stored for retraining.`, false, true, pageBeforeAction);
+        persistState();
       } catch (error) {
-        renderManualMessage(error && error.message ? error.message : "Feedback could not be saved.", true);
+        showPage(pageBeforeAction);
+        renderManualMessage(error && error.message ? error.message : "Feedback could not be saved.", true, true, pageBeforeAction);
       }
     }
 
-    function exportHistoryReport() {
-      const report = {
-        exported_at: new Date().toISOString(),
-        summary: getStats(getMetricItems()),
-        scans: manualAnalyses,
-      };
-      const blob = new Blob([JSON.stringify(report, null, 2)], { type: "application/json" });
+    function reportRowsForCurrentPage() {
+      return currentPage === "dashboard" ? manualAnalyses : scansForPage(currentPage);
+    }
+
+    function downloadText(filename, content, type = "text/plain") {
+      const blob = new Blob([content], { type });
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `phishing-scan-report-${Date.now()}.json`;
+      link.download = filename;
       document.body.appendChild(link);
       link.click();
       link.remove();
       URL.revokeObjectURL(url);
     }
 
-    function renderManualResult(title, result) {
+    function buildTextReport(scans) {
+      const stats = getStats(scans);
+      const lines = [
+        "Phishing Scan Report",
+        "====================",
+        `Exported at: ${new Date().toLocaleString()}`,
+        `Scope: ${currentPage === "dashboard" ? "All scans" : pageMeta[currentPage][0]}`,
+        `Total: ${stats.total}`,
+        `Safe: ${stats.safe}`,
+        `Suspicious: ${stats.suspicious}`,
+        `Phishing: ${stats.phishing}`,
+        `Average confidence: ${asPercent(stats.avgConfidence, 1)}`,
+        "",
+        "Scans",
+        "-----",
+      ];
+
+      if (!scans.length) {
+        lines.push("No scans available for this report.");
+        return lines.join("\n");
+      }
+
+      scans.forEach((scan, index) => {
+        lines.push(
+          `${index + 1}. ${scanTitle(scan)}`,
+          `Type: ${String(scan.input_type || "manual").toUpperCase()}`,
+          `Label: ${normalizeLabel(scan.label)}`,
+          `Risk: ${scan.risk_level || scan.risk || "UNKNOWN"}`,
+          `Confidence: ${asPercent(scan.confidence, 2)}`,
+          `When: ${scan.created_at ? new Date(scan.created_at).toLocaleString() : "Not available"}`,
+          `Reasons: ${(Array.isArray(scan.reasons) && scan.reasons.length) ? scan.reasons.join("; ") : "No reasons stored"}`,
+          ""
+        );
+      });
+
+      return lines.join("\n");
+    }
+
+    function exportHistoryReport(format = "json") {
+      const scans = reportRowsForCurrentPage();
+      const report = {
+        exported_at: new Date().toISOString(),
+        scope: currentPage === "dashboard" ? "all" : currentPage,
+        summary: getStats(scans),
+        scans,
+      };
+
+      if (format === "text") {
+        downloadText(`phishing-scan-report-${Date.now()}.txt`, buildTextReport(scans));
+        return;
+      }
+
+      downloadText(
+        `phishing-scan-report-${Date.now()}.json`,
+        JSON.stringify(report, null, 2),
+        "application/json"
+      );
+    }
+
+    function pageForResultTitle(title) {
+      const lowerTitle = title.toLowerCase();
+      if (lowerTitle.includes("link") || lowerTitle.includes("url")) return "links";
+      if (lowerTitle.includes("attachment")) return "attachments";
+      if (lowerTitle.includes("webpage")) return "webpage";
+      if (lowerTitle.includes("image") || lowerTitle.includes("qr")) return "image";
+      return "email";
+    }
+
+    function renderManualResult(title, result, page = pageForResultTitle(title)) {
       manualResult.textContent = "";
 
       const label = normalizeLabel(result.label);
@@ -1715,6 +1968,10 @@
       });
 
       manualResult.append(head, verdictCard, grid, reasonsLabel, reasons);
+      if (page !== "dashboard") {
+        resultHtmlByPage[page] = manualResult.innerHTML;
+      }
+      persistState();
     }
 
     async function getErrorDetails(response) {
@@ -1729,9 +1986,11 @@
       }
     }
 
-    async function postAnalysis(endpoint, payload, title) {
+    async function postAnalysis(endpoint, payload, title, targetPage = currentPage) {
+      const pageBeforeAction = targetPage;
       setManualButtons(true);
-      renderManualMessage("Analyzing with the detection model...");
+      renderManualMessage("Analyzing with the detection model...", false, false, pageBeforeAction);
+      showPage(pageBeforeAction);
 
       try {
         const response = await fetch(`${API_BASE}${endpoint}`, {
@@ -1746,14 +2005,17 @@
         }
 
         const result = await response.json();
-        renderManualResult(title, result);
+        renderManualResult(title, result, pageBeforeAction);
+        showPage(pageBeforeAction);
       } catch (error) {
         const message = error && error.message
           ? error.message
           : "Unable to analyze. Ensure the FastAPI server is running.";
-        renderManualMessage(message, true);
+        showPage(pageBeforeAction);
+        renderManualMessage(message, true, true, pageBeforeAction);
       } finally {
         setManualButtons(false);
+        showPage(pageBeforeAction);
       }
     }
 
@@ -1762,6 +2024,8 @@
         .split(/\n|,/)
         .map((item) => item.trim())
         .filter(Boolean);
+      const fileDescriptions = (input) => Array.from((input && input.files) || [])
+        .map((file) => `${file.name}${file.type ? ` (${file.type})` : ""}${file.size ? ` - ${file.size} bytes` : ""}`);
 
       return {
         subject: manualSubject.value.trim(),
@@ -1769,13 +2033,20 @@
         body: manualBody.value.trim(),
         url: manualUrl.value.trim(),
         links: parseLines(manualLinks.value),
-        attachments: parseLines(manualAttachments.value),
+        attachments: parseLines(manualAttachments.value).concat(fileDescriptions(manualAttachmentFiles)),
         reply_to: manualReplyTo.value.trim(),
         return_path: manualReturnPath.value.trim(),
         webpage_text: manualPage.value.trim(),
-        image_indicators: parseLines(manualImage.value),
-        qr_text: manualImage.value.trim(),
+        image_indicators: parseLines(manualImage.value).concat(fileDescriptions(manualImageFiles)),
+        qr_text: [manualImage.value.trim()].concat(fileDescriptions(manualImageFiles)).filter(Boolean).join("\n"),
       };
+    }
+
+    function syncFileNames(input, textarea) {
+      const names = Array.from((input && input.files) || []).map((file) => file.name);
+      if (!names.length || !textarea) return;
+      const existing = textarea.value.trim();
+      textarea.value = existing ? `${existing}\n${names.join("\n")}` : names.join("\n");
     }
 
     function clearFields(fields) {
@@ -1789,9 +2060,9 @@
         links: [manualUrl, manualLinks],
         email: [manualSender, manualSubject, manualBody],
         sender: [manualSender, manualReplyTo, manualReturnPath],
-        attachments: [manualAttachments],
+        attachments: [manualAttachments, manualAttachmentFiles],
         webpage: [manualPage],
-        image: [manualImage],
+        image: [manualImage, manualImageFiles],
       };
 
       Object.entries(groups).forEach(([name, fields]) => {
@@ -1800,21 +2071,23 @@
     }
 
     function analyzeManualUrl() {
+      showPage("links");
       const payload = getManualPayload();
       const firstUrl = payload.url || payload.links[0] || "";
       if (!firstUrl) {
-        renderManualMessage("Paste a URL or link first, then run link analysis.", true);
+        renderManualMessage("Paste a URL or link first, then run link analysis.", true, true, "links");
         manualUrl.focus();
         return;
       }
       clearSectionsExcept("links");
-      postAnalysis("/analyze-url", { url: firstUrl }, "Link analysis result");
+      postAnalysis("/analyze-url", { url: firstUrl }, "Link analysis result", "links");
     }
 
     function analyzeManualEmail() {
+      showPage("email");
       const payload = getManualPayload();
       if (!payload.subject && !payload.body && !payload.sender) {
-        renderManualMessage("Paste email sender, subject, or body first, then run email analysis.", true);
+        renderManualMessage("Paste email sender, subject, or body first, then run email analysis.", true, true, "email");
         manualBody.focus();
         return;
       }
@@ -1823,10 +2096,12 @@
         subject: payload.subject,
         sender: payload.sender,
         body: payload.body,
-      }, "Email analysis result");
+        scan_type: "email",
+      }, "Email analysis result", "email");
     }
 
     function analyzeManualSender() {
+      showPage("sender");
       const payload = getManualPayload();
       if (!payload.sender && !payload.reply_to && !payload.return_path) {
         renderManualMessage("Add sender, Reply-To, or Return-Path first.", true);
@@ -1842,35 +2117,40 @@
     }
 
     function analyzeManualAttachments() {
+      showPage("attachments");
       const payload = getManualPayload();
       if (!payload.attachments.length) {
-        renderManualMessage("Add attachment names first, then run attachment analysis.", true);
+        renderManualMessage("Add attachment names first, then run attachment analysis.", true, true, "attachments");
         manualAttachments.focus();
         return;
       }
       clearSectionsExcept("attachments");
       postAnalysis("/analyze-email", {
         attachments: payload.attachments,
-      }, "Attachment analysis result");
+        scan_type: "attachments",
+      }, "Attachment analysis result", "attachments");
     }
 
     function analyzeManualPage() {
+      showPage("webpage");
       const payload = getManualPayload();
       if (!payload.webpage_text) {
-        renderManualMessage("Paste webpage text or HTML first.", true);
+        renderManualMessage("Paste webpage text or HTML first.", true, true, "webpage");
         manualPage.focus();
         return;
       }
       clearSectionsExcept("webpage");
       postAnalysis("/analyze-email", {
         webpage_text: payload.webpage_text,
-      }, "Webpage feature analysis result");
+        scan_type: "webpage",
+      }, "Webpage feature analysis result", "webpage");
     }
 
     function analyzeManualImage() {
+      showPage("image");
       const payload = getManualPayload();
       if (!payload.image_indicators.length && !payload.qr_text) {
-        renderManualMessage("Add image or QR notes first.", true);
+        renderManualMessage("Add image or QR notes first.", true, true, "image");
         manualImage.focus();
         return;
       }
@@ -1878,10 +2158,12 @@
       postAnalysis("/analyze-email", {
         image_indicators: payload.image_indicators,
         qr_text: payload.qr_text,
-      }, "Image / QR analysis result");
+        scan_type: "image",
+      }, "Image / QR analysis result", "image");
     }
 
     function analyzeManualFull() {
+      showPage("full");
       const payload = getManualPayload();
       const hasAnySignal = payload.url || payload.links.length || payload.subject || payload.body || payload.sender
         || payload.reply_to || payload.return_path || payload.attachments.length || payload.webpage_text || payload.image_indicators.length;
@@ -2031,6 +2313,7 @@
       renderStats(getMetricItems());
       renderList(filteredEmails);
       renderDetail(filteredEmails[selectedIndex]);
+      keepCurrentPage();
     }
 
     async function fetchEmails() {
@@ -2077,23 +2360,64 @@
       }
     }
 
-    refreshBtn.addEventListener("click", fetchEmails);
     navButtons.forEach((button) => {
-      button.addEventListener("click", () => showPage(button.dataset.page || "dashboard"));
+      button.addEventListener("click", (event) => {
+        event.preventDefault();
+        showPage(button.dataset.page || "dashboard");
+      });
     });
-    analyzeUrlBtn.addEventListener("click", analyzeManualUrl);
-    analyzeEmailBtn.addEventListener("click", analyzeManualEmail);
-    analyzeSenderBtn.addEventListener("click", analyzeManualSender);
-    analyzeAttachmentsBtn.addEventListener("click", analyzeManualAttachments);
-    analyzePageBtn.addEventListener("click", analyzeManualPage);
-    analyzeImageBtn.addEventListener("click", analyzeManualImage);
-    analyzeFullBtn.addEventListener("click", analyzeManualFull);
-    exportHistoryBtn.addEventListener("click", exportHistoryReport);
-    clearHistoryBtn.addEventListener("click", () => {
-      manualAnalyses = [];
-      renderManualHistory();
-      renderStats(getMetricItems());
+    analyzeUrlBtn.addEventListener("click", (event) => {
+      event.preventDefault();
+      analyzeManualUrl();
     });
+    analyzeEmailBtn.addEventListener("click", (event) => {
+      event.preventDefault();
+      analyzeManualEmail();
+    });
+    analyzeSenderBtn.addEventListener("click", (event) => {
+      event.preventDefault();
+      analyzeManualSender();
+    });
+    analyzeAttachmentsBtn.addEventListener("click", (event) => {
+      event.preventDefault();
+      analyzeManualAttachments();
+    });
+    analyzePageBtn.addEventListener("click", (event) => {
+      event.preventDefault();
+      analyzeManualPage();
+    });
+    analyzeImageBtn.addEventListener("click", (event) => {
+      event.preventDefault();
+      analyzeManualImage();
+    });
+    analyzeFullBtn.addEventListener("click", (event) => {
+      event.preventDefault();
+      analyzeManualFull();
+    });
+    exportHistoryJsonBtn.addEventListener("click", (event) => {
+      event.preventDefault();
+      exportHistoryReport("json");
+    });
+    exportHistoryTextBtn.addEventListener("click", (event) => {
+      event.preventDefault();
+      exportHistoryReport("text");
+    });
+    exportDashboardJsonBtn.addEventListener("click", (event) => {
+      event.preventDefault();
+      const previousPage = currentPage;
+      currentPage = "dashboard";
+      exportHistoryReport("json");
+      currentPage = previousPage;
+    });
+    exportDashboardTextBtn.addEventListener("click", (event) => {
+      event.preventDefault();
+      const previousPage = currentPage;
+      currentPage = "dashboard";
+      exportHistoryReport("text");
+      currentPage = previousPage;
+    });
+    manualAttachmentFiles.addEventListener("change", () => syncFileNames(manualAttachmentFiles, manualAttachments));
+    manualImageFiles.addEventListener("change", () => syncFileNames(manualImageFiles, manualImage));
     searchInput.addEventListener("input", applyFilters);
     filterTabs.forEach((tab) => {
       tab.addEventListener("click", () => {
@@ -2104,9 +2428,9 @@
       });
     });
 
+    restoreState();
+    setStatus("Manual analysis is ready. Start the backend before running a new scan.", "ready");
     loadScanHistory();
-    showPage("dashboard");
-    fetchEmails();
   </script>
 </body>
 </html>

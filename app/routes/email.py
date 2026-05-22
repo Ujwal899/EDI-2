@@ -20,6 +20,7 @@ class AnalyzeEmailRequest(BaseModel):
     body: str = Field(default="", max_length=500000)
     sender: str = Field(default="", max_length=1000)
     url: str = Field(default="", max_length=5000)
+    scan_type: str = Field(default="email", max_length=50)
     links: list[str] = Field(default_factory=list)
     attachments: list[str] = Field(default_factory=list)
     reply_to: str = Field(default="", max_length=1000)
@@ -77,9 +78,12 @@ async def analyze_email(payload: AnalyzeEmailRequest) -> AnalyzeResponse:
             qr_text=payload.qr_text,
         )
         result = merge_multimodal_result(result, multimodal_result)
+        input_type = payload.scan_type.strip().lower() or "email"
+        if input_type not in {"email", "attachments", "webpage", "image"}:
+            input_type = "email"
         scan_id = scan_history_service.record_scan(
             source="manual",
-            input_type="email",
+            input_type=input_type,
             subject=payload.subject,
             sender=payload.sender,
             body=payload.body,
@@ -87,7 +91,7 @@ async def analyze_email(payload: AnalyzeEmailRequest) -> AnalyzeResponse:
         )
         result["scan_id"] = scan_id
         result["source"] = "manual"
-        result["input_type"] = "email"
+        result["input_type"] = input_type
         return AnalyzeResponse(**result)
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Failed to analyze email: {exc}") from exc

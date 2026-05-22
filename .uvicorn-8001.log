@@ -1,3 +1,0 @@
-INFO:     127.0.0.1:60222 - "GET /emails?limit=1 HTTP/1.1" 500 Internal Server Error
-INFO:     127.0.0.1:60221 - "GET /dashboard-ui HTTP/1.1" 200 OK
-INFO:     127.0.0.1:60223 - "POST /analyze-email HTTP/1.1" 200 OK

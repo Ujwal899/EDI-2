@@ -1,4 +1,4 @@
-INFO:     Started server process [6464]
+INFO:     Started server process [7232]
 INFO:     Waiting for application startup.
 C:\Users\Dell\OneDrive\Desktop\EDI\venv\Lib\site-packages\sklearn\base.py:463: InconsistentVersionWarning: Trying to unpickle estimator LogisticRegression from version 1.7.2 when using version 1.8.0. This might lead to breaking code or invalid results. Use at your own risk. For more info please refer to:
 https://scikit-learn.org/stable/model_persistence.html#security-maintainability-limitations
@@ -9,137 +9,12 @@ https://scikit-learn.org/stable/model_persistence.html#security-maintainability-
 C:\Users\Dell\OneDrive\Desktop\EDI\venv\Lib\site-packages\sklearn\base.py:463: InconsistentVersionWarning: Trying to unpickle estimator TfidfVectorizer from version 1.7.2 when using version 1.8.0. This might lead to breaking code or invalid results. Use at your own risk. For more info please refer to:
 https://scikit-learn.org/stable/model_persistence.html#security-maintainability-limitations
   warnings.warn(
-2026-05-20 15:08:25,716 | INFO | phishing-api | Loaded email model artifacts
+2026-05-22 18:24:50,768 | INFO | phishing-api | Loaded email model artifacts
 INFO:     Application startup complete.
 INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
-2026-05-20 15:10:41,228 | INFO | app.routes.email | /emails request received with limit=20
-2026-05-20 15:10:41,229 | INFO | app.services.gmail_dashboard_service | Starting Gmail fetch for /emails endpoint (limit=20)
-2026-05-20 15:10:41,244 | ERROR | app.services.gmail_dashboard_service | Failed while fetching/analyzing Gmail emails: Missing Gmail auth files: C:\Users\Dell\OneDrive\Desktop\EDI\credentials.json, C:\Users\Dell\OneDrive\Desktop\EDI\token.json
-Traceback (most recent call last):
-  File "C:\Users\Dell\OneDrive\Desktop\EDI\app\services\gmail_dashboard_service.py", line 63, in fetch_analyzed_emails
-    client = self._get_client(max_results=max_results)
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\Dell\OneDrive\Desktop\EDI\app\services\gmail_dashboard_service.py", line 22, in _get_client
-    self._validate_auth_files()
-  File "C:\Users\Dell\OneDrive\Desktop\EDI\app\services\gmail_dashboard_service.py", line 41, in _validate_auth_files
-    raise FileNotFoundError(
-FileNotFoundError: Missing Gmail auth files: C:\Users\Dell\OneDrive\Desktop\EDI\credentials.json, C:\Users\Dell\OneDrive\Desktop\EDI\token.json
-2026-05-20 15:10:41,258 | ERROR | app.routes.email | /emails failed: Missing Gmail auth files: C:\Users\Dell\OneDrive\Desktop\EDI\credentials.json, C:\Users\Dell\OneDrive\Desktop\EDI\token.json
-Traceback (most recent call last):
-  File "C:\Users\Dell\OneDrive\Desktop\EDI\app\routes\email.py", line 100, in get_emails
-    emails = gmail_dashboard_service.fetch_analyzed_emails(limit=limit)
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\Dell\OneDrive\Desktop\EDI\app\services\gmail_dashboard_service.py", line 63, in fetch_analyzed_emails
-    client = self._get_client(max_results=max_results)
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\Dell\OneDrive\Desktop\EDI\app\services\gmail_dashboard_service.py", line 22, in _get_client
-    self._validate_auth_files()
-  File "C:\Users\Dell\OneDrive\Desktop\EDI\app\services\gmail_dashboard_service.py", line 41, in _validate_auth_files
-    raise FileNotFoundError(
-FileNotFoundError: Missing Gmail auth files: C:\Users\Dell\OneDrive\Desktop\EDI\credentials.json, C:\Users\Dell\OneDrive\Desktop\EDI\token.json
 C:\Users\Dell\OneDrive\Desktop\EDI\venv\Lib\site-packages\sklearn\base.py:463: InconsistentVersionWarning: Trying to unpickle estimator DecisionTreeClassifier from version 1.7.2 when using version 1.8.0. This might lead to breaking code or invalid results. Use at your own risk. For more info please refer to:
 https://scikit-learn.org/stable/model_persistence.html#security-maintainability-limitations
   warnings.warn(
 C:\Users\Dell\OneDrive\Desktop\EDI\venv\Lib\site-packages\sklearn\base.py:463: InconsistentVersionWarning: Trying to unpickle estimator RandomForestClassifier from version 1.7.2 when using version 1.8.0. This might lead to breaking code or invalid results. Use at your own risk. For more info please refer to:
 https://scikit-learn.org/stable/model_persistence.html#security-maintainability-limitations
   warnings.warn(
-2026-05-20 15:23:43,435 | INFO | app.routes.email | /emails request received with limit=20
-2026-05-20 15:23:43,436 | INFO | app.services.gmail_dashboard_service | Starting Gmail fetch for /emails endpoint (limit=20)
-2026-05-20 15:23:43,438 | ERROR | app.services.gmail_dashboard_service | Failed while fetching/analyzing Gmail emails: Missing Gmail auth files: C:\Users\Dell\OneDrive\Desktop\EDI\credentials.json, C:\Users\Dell\OneDrive\Desktop\EDI\token.json
-Traceback (most recent call last):
-  File "C:\Users\Dell\OneDrive\Desktop\EDI\app\services\gmail_dashboard_service.py", line 63, in fetch_analyzed_emails
-    client = self._get_client(max_results=max_results)
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\Dell\OneDrive\Desktop\EDI\app\services\gmail_dashboard_service.py", line 22, in _get_client
-    self._validate_auth_files()
-  File "C:\Users\Dell\OneDrive\Desktop\EDI\app\services\gmail_dashboard_service.py", line 41, in _validate_auth_files
-    raise FileNotFoundError(
-FileNotFoundError: Missing Gmail auth files: C:\Users\Dell\OneDrive\Desktop\EDI\credentials.json, C:\Users\Dell\OneDrive\Desktop\EDI\token.json
-2026-05-20 15:23:43,441 | ERROR | app.routes.email | /emails failed: Missing Gmail auth files: C:\Users\Dell\OneDrive\Desktop\EDI\credentials.json, C:\Users\Dell\OneDrive\Desktop\EDI\token.json
-Traceback (most recent call last):
-  File "C:\Users\Dell\OneDrive\Desktop\EDI\app\routes\email.py", line 100, in get_emails
-    emails = gmail_dashboard_service.fetch_analyzed_emails(limit=limit)
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\Dell\OneDrive\Desktop\EDI\app\services\gmail_dashboard_service.py", line 63, in fetch_analyzed_emails
-    client = self._get_client(max_results=max_results)
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\Dell\OneDrive\Desktop\EDI\app\services\gmail_dashboard_service.py", line 22, in _get_client
-    self._validate_auth_files()
-  File "C:\Users\Dell\OneDrive\Desktop\EDI\app\services\gmail_dashboard_service.py", line 41, in _validate_auth_files
-    raise FileNotFoundError(
-FileNotFoundError: Missing Gmail auth files: C:\Users\Dell\OneDrive\Desktop\EDI\credentials.json, C:\Users\Dell\OneDrive\Desktop\EDI\token.json
-2026-05-20 15:23:55,708 | INFO | app.routes.email | /emails request received with limit=20
-2026-05-20 15:23:55,711 | INFO | app.services.gmail_dashboard_service | Starting Gmail fetch for /emails endpoint (limit=20)
-2026-05-20 15:23:55,712 | ERROR | app.services.gmail_dashboard_service | Failed while fetching/analyzing Gmail emails: Missing Gmail auth files: C:\Users\Dell\OneDrive\Desktop\EDI\credentials.json, C:\Users\Dell\OneDrive\Desktop\EDI\token.json
-Traceback (most recent call last):
-  File "C:\Users\Dell\OneDrive\Desktop\EDI\app\services\gmail_dashboard_service.py", line 63, in fetch_analyzed_emails
-    client = self._get_client(max_results=max_results)
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\Dell\OneDrive\Desktop\EDI\app\services\gmail_dashboard_service.py", line 22, in _get_client
-    self._validate_auth_files()
-  File "C:\Users\Dell\OneDrive\Desktop\EDI\app\services\gmail_dashboard_service.py", line 41, in _validate_auth_files
-    raise FileNotFoundError(
-FileNotFoundError: Missing Gmail auth files: C:\Users\Dell\OneDrive\Desktop\EDI\credentials.json, C:\Users\Dell\OneDrive\Desktop\EDI\token.json
-2026-05-20 15:23:55,714 | ERROR | app.routes.email | /emails failed: Missing Gmail auth files: C:\Users\Dell\OneDrive\Desktop\EDI\credentials.json, C:\Users\Dell\OneDrive\Desktop\EDI\token.json
-Traceback (most recent call last):
-  File "C:\Users\Dell\OneDrive\Desktop\EDI\app\routes\email.py", line 100, in get_emails
-    emails = gmail_dashboard_service.fetch_analyzed_emails(limit=limit)
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\Dell\OneDrive\Desktop\EDI\app\services\gmail_dashboard_service.py", line 63, in fetch_analyzed_emails
-    client = self._get_client(max_results=max_results)
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\Dell\OneDrive\Desktop\EDI\app\services\gmail_dashboard_service.py", line 22, in _get_client
-    self._validate_auth_files()
-  File "C:\Users\Dell\OneDrive\Desktop\EDI\app\services\gmail_dashboard_service.py", line 41, in _validate_auth_files
-    raise FileNotFoundError(
-FileNotFoundError: Missing Gmail auth files: C:\Users\Dell\OneDrive\Desktop\EDI\credentials.json, C:\Users\Dell\OneDrive\Desktop\EDI\token.json
-2026-05-20 15:28:57,506 | INFO | app.routes.email | /emails request received with limit=20
-2026-05-20 15:28:57,507 | INFO | app.services.gmail_dashboard_service | Starting Gmail fetch for /emails endpoint (limit=20)
-2026-05-20 15:28:57,509 | ERROR | app.services.gmail_dashboard_service | Failed while fetching/analyzing Gmail emails: Missing Gmail auth files: C:\Users\Dell\OneDrive\Desktop\EDI\credentials.json, C:\Users\Dell\OneDrive\Desktop\EDI\token.json
-Traceback (most recent call last):
-  File "C:\Users\Dell\OneDrive\Desktop\EDI\app\services\gmail_dashboard_service.py", line 63, in fetch_analyzed_emails
-    client = self._get_client(max_results=max_results)
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\Dell\OneDrive\Desktop\EDI\app\services\gmail_dashboard_service.py", line 22, in _get_client
-    self._validate_auth_files()
-  File "C:\Users\Dell\OneDrive\Desktop\EDI\app\services\gmail_dashboard_service.py", line 41, in _validate_auth_files
-    raise FileNotFoundError(
-FileNotFoundError: Missing Gmail auth files: C:\Users\Dell\OneDrive\Desktop\EDI\credentials.json, C:\Users\Dell\OneDrive\Desktop\EDI\token.json
-2026-05-20 15:28:57,510 | ERROR | app.routes.email | /emails failed: Missing Gmail auth files: C:\Users\Dell\OneDrive\Desktop\EDI\credentials.json, C:\Users\Dell\OneDrive\Desktop\EDI\token.json
-Traceback (most recent call last):
-  File "C:\Users\Dell\OneDrive\Desktop\EDI\app\routes\email.py", line 100, in get_emails
-    emails = gmail_dashboard_service.fetch_analyzed_emails(limit=limit)
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\Dell\OneDrive\Desktop\EDI\app\services\gmail_dashboard_service.py", line 63, in fetch_analyzed_emails
-    client = self._get_client(max_results=max_results)
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\Dell\OneDrive\Desktop\EDI\app\services\gmail_dashboard_service.py", line 22, in _get_client
-    self._validate_auth_files()
-  File "C:\Users\Dell\OneDrive\Desktop\EDI\app\services\gmail_dashboard_service.py", line 41, in _validate_auth_files
-    raise FileNotFoundError(
-FileNotFoundError: Missing Gmail auth files: C:\Users\Dell\OneDrive\Desktop\EDI\credentials.json, C:\Users\Dell\OneDrive\Desktop\EDI\token.json
-2026-05-20 15:31:19,405 | INFO | app.routes.email | /emails request received with limit=20
-2026-05-20 15:31:19,406 | INFO | app.services.gmail_dashboard_service | Starting Gmail fetch for /emails endpoint (limit=20)
-2026-05-20 15:31:19,407 | ERROR | app.services.gmail_dashboard_service | Failed while fetching/analyzing Gmail emails: Missing Gmail auth files: C:\Users\Dell\OneDrive\Desktop\EDI\credentials.json, C:\Users\Dell\OneDrive\Desktop\EDI\token.json
-Traceback (most recent call last):
-  File "C:\Users\Dell\OneDrive\Desktop\EDI\app\services\gmail_dashboard_service.py", line 63, in fetch_analyzed_emails
-    client = self._get_client(max_results=max_results)
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\Dell\OneDrive\Desktop\EDI\app\services\gmail_dashboard_service.py", line 22, in _get_client
-    self._validate_auth_files()
-  File "C:\Users\Dell\OneDrive\Desktop\EDI\app\services\gmail_dashboard_service.py", line 41, in _validate_auth_files
-    raise FileNotFoundError(
-FileNotFoundError: Missing Gmail auth files: C:\Users\Dell\OneDrive\Desktop\EDI\credentials.json, C:\Users\Dell\OneDrive\Desktop\EDI\token.json
-2026-05-20 15:31:19,409 | ERROR | app.routes.email | /emails failed: Missing Gmail auth files: C:\Users\Dell\OneDrive\Desktop\EDI\credentials.json, C:\Users\Dell\OneDrive\Desktop\EDI\token.json
-Traceback (most recent call last):
-  File "C:\Users\Dell\OneDrive\Desktop\EDI\app\routes\email.py", line 100, in get_emails
-    emails = gmail_dashboard_service.fetch_analyzed_emails(limit=limit)
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\Dell\OneDrive\Desktop\EDI\app\services\gmail_dashboard_service.py", line 63, in fetch_analyzed_emails
-    client = self._get_client(max_results=max_results)
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\Dell\OneDrive\Desktop\EDI\app\services\gmail_dashboard_service.py", line 22, in _get_client
-    self._validate_auth_files()
-  File "C:\Users\Dell\OneDrive\Desktop\EDI\app\services\gmail_dashboard_service.py", line 41, in _validate_auth_files
-    raise FileNotFoundError(
-FileNotFoundError: Missing Gmail auth files: C:\Users\Dell\OneDrive\Desktop\EDI\credentials.json, C:\Users\Dell\OneDrive\Desktop\EDI\token.json
