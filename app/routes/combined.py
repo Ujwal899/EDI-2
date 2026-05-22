@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Any, Literal
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
@@ -19,7 +19,7 @@ class AnalyzeFullRequest(BaseModel):
     sender: str = Field(default="", max_length=1000)
     url: str = Field(default="", max_length=5000)
     links: list[str] = Field(default_factory=list)
-    attachments: list[str] = Field(default_factory=list)
+    attachments: list[str | dict[str, Any]] = Field(default_factory=list)
     reply_to: str = Field(default="", max_length=1000)
     return_path: str = Field(default="", max_length=1000)
     webpage_text: str = Field(default="", max_length=500000)

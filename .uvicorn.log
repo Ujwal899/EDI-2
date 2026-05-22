@@ -1,5 +1,7 @@
-INFO:     127.0.0.1:53028 - "GET /dashboard-ui HTTP/1.1" 200 OK
-INFO:     127.0.0.1:53029 - "POST /analyze-email HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56420 - "GET /dashboard-ui HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56420 - "GET /scan-history?limit=25 HTTP/1.1" 200 OK
-INFO:     127.0.0.1:55166 - "POST /analyze-url HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49944 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49953 - "GET /dashboard-ui HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49954 - "POST /analyze-url HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49955 - "POST /analyze-email HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49956 - "POST /analyze-email HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49961 - "GET /dashboard-ui HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52260 - "GET /health HTTP/1.1" 200 OK

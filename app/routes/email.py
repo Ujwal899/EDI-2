@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Any, Literal
 import logging
 
 from fastapi import APIRouter, HTTPException, Query
@@ -22,7 +22,7 @@ class AnalyzeEmailRequest(BaseModel):
     url: str = Field(default="", max_length=5000)
     scan_type: str = Field(default="email", max_length=50)
     links: list[str] = Field(default_factory=list)
-    attachments: list[str] = Field(default_factory=list)
+    attachments: list[str | dict[str, Any]] = Field(default_factory=list)
     reply_to: str = Field(default="", max_length=1000)
     return_path: str = Field(default="", max_length=1000)
     webpage_text: str = Field(default="", max_length=500000)

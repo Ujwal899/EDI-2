@@ -2019,13 +2019,39 @@
       }
     }
 
-    function getManualPayload() {
+    async function readFileSignal(file) {
+      const maxSampleBytes = 250000;
+      const sample = file.slice(0, maxSampleBytes);
+      let contentSample = "";
+
+      try {
+        const buffer = await sample.arrayBuffer();
+        contentSample = new TextDecoder("utf-8", { fatal: false }).decode(buffer);
+      } catch (_) {
+        contentSample = "";
+      }
+
+      return {
+        filename: file.name,
+        mime_type: file.type || "",
+        size: file.size || 0,
+        content_sample: contentSample,
+      };
+    }
+
+    async function fileDescriptions(input) {
+      const files = Array.from((input && input.files) || []);
+      return Promise.all(files.map(readFileSignal));
+    }
+
+    async function getManualPayload() {
       const parseLines = (value) => String(value || "")
         .split(/\n|,/)
         .map((item) => item.trim())
         .filter(Boolean);
-      const fileDescriptions = (input) => Array.from((input && input.files) || [])
-        .map((file) => `${file.name}${file.type ? ` (${file.type})` : ""}${file.size ? ` - ${file.size} bytes` : ""}`);
+      const attachmentFiles = await fileDescriptions(manualAttachmentFiles);
+      const imageFiles = await fileDescriptions(manualImageFiles);
+      const imageFileLabels = imageFiles.map((file) => `${file.filename}${file.mime_type ? ` (${file.mime_type})` : ""}${file.size ? ` - ${file.size} bytes` : ""}`);
 
       return {
         subject: manualSubject.value.trim(),
@@ -2033,12 +2059,12 @@
         body: manualBody.value.trim(),
         url: manualUrl.value.trim(),
         links: parseLines(manualLinks.value),
-        attachments: parseLines(manualAttachments.value).concat(fileDescriptions(manualAttachmentFiles)),
+        attachments: parseLines(manualAttachments.value).concat(attachmentFiles),
         reply_to: manualReplyTo.value.trim(),
         return_path: manualReturnPath.value.trim(),
         webpage_text: manualPage.value.trim(),
-        image_indicators: parseLines(manualImage.value).concat(fileDescriptions(manualImageFiles)),
-        qr_text: [manualImage.value.trim()].concat(fileDescriptions(manualImageFiles)).filter(Boolean).join("\n"),
+        image_indicators: parseLines(manualImage.value).concat(imageFileLabels),
+        qr_text: [manualImage.value.trim()].concat(imageFileLabels).concat(imageFiles.map((file) => file.content_sample)).filter(Boolean).join("\n"),
       };
     }
 
@@ -2070,9 +2096,9 @@
       });
     }
 
-    function analyzeManualUrl() {
+    async function analyzeManualUrl() {
       showPage("links");
-      const payload = getManualPayload();
+      const payload = await getManualPayload();
       const firstUrl = payload.url || payload.links[0] || "";
       if (!firstUrl) {
         renderManualMessage("Paste a URL or link first, then run link analysis.", true, true, "links");
@@ -2083,9 +2109,9 @@
       postAnalysis("/analyze-url", { url: firstUrl }, "Link analysis result", "links");
     }
 
-    function analyzeManualEmail() {
+    async function analyzeManualEmail() {
       showPage("email");
-      const payload = getManualPayload();
+      const payload = await getManualPayload();
       if (!payload.subject && !payload.body && !payload.sender) {
         renderManualMessage("Paste email sender, subject, or body first, then run email analysis.", true, true, "email");
         manualBody.focus();
@@ -2100,9 +2126,9 @@
       }, "Email analysis result", "email");
     }
 
-    function analyzeManualSender() {
+    async function analyzeManualSender() {
       showPage("sender");
-      const payload = getManualPayload();
+      const payload = await getManualPayload();
       if (!payload.sender && !payload.reply_to && !payload.return_path) {
         renderManualMessage("Add sender, Reply-To, or Return-Path first.", true);
         manualSender.focus();
@@ -2116,9 +2142,9 @@
       }, "Sender analysis result");
     }
 
-    function analyzeManualAttachments() {
+    async function analyzeManualAttachments() {
       showPage("attachments");
-      const payload = getManualPayload();
+      const payload = await getManualPayload();
       if (!payload.attachments.length) {
         renderManualMessage("Add attachment names first, then run attachment analysis.", true, true, "attachments");
         manualAttachments.focus();
@@ -2131,9 +2157,9 @@
       }, "Attachment analysis result", "attachments");
     }
 
-    function analyzeManualPage() {
+    async function analyzeManualPage() {
       showPage("webpage");
-      const payload = getManualPayload();
+      const payload = await getManualPayload();
       if (!payload.webpage_text) {
         renderManualMessage("Paste webpage text or HTML first.", true, true, "webpage");
         manualPage.focus();
@@ -2146,9 +2172,9 @@
       }, "Webpage feature analysis result", "webpage");
     }
 
-    function analyzeManualImage() {
+    async function analyzeManualImage() {
       showPage("image");
-      const payload = getManualPayload();
+      const payload = await getManualPayload();
       if (!payload.image_indicators.length && !payload.qr_text) {
         renderManualMessage("Add image or QR notes first.", true, true, "image");
         manualImage.focus();
@@ -2162,9 +2188,9 @@
       }, "Image / QR analysis result", "image");
     }
 
-    function analyzeManualFull() {
+    async function analyzeManualFull() {
       showPage("full");
-      const payload = getManualPayload();
+      const payload = await getManualPayload();
       const hasAnySignal = payload.url || payload.links.length || payload.subject || payload.body || payload.sender
         || payload.reply_to || payload.return_path || payload.attachments.length || payload.webpage_text || payload.image_indicators.length;
       if (!hasAnySignal) {

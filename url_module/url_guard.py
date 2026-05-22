@@ -51,10 +51,43 @@ SUSPICIOUS_TLDS = {
     "work",
     "country",
     "stream",
+    "cam",
+    "cfd",
+    "icu",
+    "live",
+    "mom",
+    "quest",
+    "rest",
+    "sbs",
+    "shop",
+    "site",
+    "support",
 }
 
-PHISHING_KEYWORDS = re.compile(r"login|verify|secure|update|password|confirm|signin|account", re.IGNORECASE)
+BRAND_KEYWORDS = {
+    "paypal",
+    "microsoft",
+    "office",
+    "outlook",
+    "onedrive",
+    "google",
+    "apple",
+    "amazon",
+    "netflix",
+    "facebook",
+    "instagram",
+    "whatsapp",
+    "bank",
+    "sbi",
+    "hdfc",
+    "icici",
+}
+PHISHING_KEYWORDS = re.compile(
+    r"login|verify|secure|update|password|confirm|signin|account|wallet|invoice|payment|billing|support|mfa|2fa|otp",
+    re.IGNORECASE,
+)
 RANDOM_TOKEN_RE = re.compile(r"[a-zA-Z0-9]{20,}")
+URL_ENCODING_RE = re.compile(r"%[0-9a-fA-F]{2}")
 
 
 def _load_threshold() -> float:
@@ -181,6 +214,19 @@ def _analyze_structure(url: str) -> tuple[float, list[str], int]:
         score += 0.35
         reasons.append("URL contains phishing keywords")
 
+    if "xn--" in host:
+        score += 0.7
+        strong_count += 1
+        reasons.append("Domain uses punycode, which can hide lookalike characters")
+
+    if URL_ENCODING_RE.search(url) and PHISHING_KEYWORDS.search(url):
+        score += 0.25
+        reasons.append("URL uses encoded characters around phishing terms")
+
+    if path_query.count("//") >= 1 or "redirect" in path_query.lower() or "url=" in path_query.lower():
+        score += 0.3
+        reasons.append("URL contains redirect-style parameters")
+
     if (parsed.scheme or "").lower() == "http":
         score += 0.2
         reasons.append("URL uses HTTP instead of HTTPS")
@@ -217,6 +263,18 @@ def _analyze_domain_reputation(hostname: str) -> tuple[float, list[str], int]:
         score += 0.55
         strong_count += 1
         reasons.append("Domain uses suspicious TLD")
+
+    for brand in BRAND_KEYWORDS:
+        if brand in domain_without_tld and not host.endswith(f"{brand}.com") and domain_without_tld != brand:
+            score += 0.45
+            reasons.append("Domain appears to imitate a known brand")
+            break
+
+    if len(domain_without_tld) >= 18 and "-" not in domain_without_tld:
+        vowels = sum(ch in "aeiou" for ch in domain_without_tld)
+        if vowels <= max(1, len(domain_without_tld) // 12):
+            score += 0.35
+            reasons.append("Domain label looks machine-generated")
 
     return score, reasons, strong_count
 

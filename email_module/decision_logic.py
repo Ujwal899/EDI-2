@@ -33,8 +33,20 @@ COMMON_SECOND_LEVEL_SUFFIXES = {
 
 URL_PATTERN = re.compile(r"https?://[^\s<>\"')]+", re.IGNORECASE)
 RANDOM_TOKEN_PATTERN = re.compile(r"[a-zA-Z0-9]{18,}")
-SUSPICIOUS_KEYWORDS = re.compile(r"login|verify|secure|update|password|confirm|billing|account", re.IGNORECASE)
-URGENCY_PATTERN = re.compile(r"urgent|immediately|suspend|final notice|within\s+\d+\s*hours", re.IGNORECASE)
+SUSPICIOUS_KEYWORDS = re.compile(
+    r"login|verify|secure|update|password|confirm|billing|account|wallet|mfa|2fa|otp|invoice|payment|quarantine",
+    re.IGNORECASE,
+)
+URGENCY_PATTERN = re.compile(
+    r"urgent|immediately|suspend|final notice|within\s+\d+\s*hours|expires?\s+today|action\s+required|limited\s+time",
+    re.IGNORECASE,
+)
+GENERIC_GREETING_PATTERN = re.compile(r"\b(dear customer|dear user|valued customer|hello user|sir/madam)\b", re.IGNORECASE)
+BEC_PATTERN = re.compile(
+    r"\b(gift cards?|wire transfer|bank details|are you available|are you at your desk|confidential|payment change|vendor update)\b",
+    re.IGNORECASE,
+)
+QR_LURE_PATTERN = re.compile(r"\b(qr|qrcode|scan\s+code|barcode|use your phone)\b", re.IGNORECASE)
 
 
 def _normalize_domain(domain: Optional[str]) -> str:
@@ -247,6 +259,19 @@ def evaluate_email(
     if URGENCY_PATTERN.search((subject or "") + " " + (body or "")):
         score += 0.2
         reasons.append("Urgency language detected")
+
+    combined_text = f"{subject or ''} {body or ''}"
+    if GENERIC_GREETING_PATTERN.search(combined_text):
+        score += 0.15
+        reasons.append("Generic greeting detected")
+
+    if BEC_PATTERN.search(combined_text):
+        score += 0.35
+        reasons.append("Business-email-compromise style wording detected")
+
+    if QR_LURE_PATTERN.search(combined_text) and SUSPICIOUS_KEYWORDS.search(combined_text):
+        score += 0.45
+        reasons.append("QR or scan-code lure combined with account-security language")
 
     link_score, link_reasons, mismatch_count, match_count, bad_link_count, keyword_hits = _analyze_links(
         urls,
