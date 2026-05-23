@@ -22,11 +22,12 @@ class AnalyzeEmailRequest(BaseModel):
     url: str = Field(default="", max_length=5000)
     scan_type: str = Field(default="email", max_length=50)
     links: list[str] = Field(default_factory=list)
-    attachments: list[str | dict[str, Any]] = Field(default_factory=list)
+    attachments: list[Any] = Field(default_factory=list)
     reply_to: str = Field(default="", max_length=1000)
     return_path: str = Field(default="", max_length=1000)
     webpage_text: str = Field(default="", max_length=500000)
     image_indicators: list[str] = Field(default_factory=list)
+    image_payloads: list[Any] = Field(default_factory=list)
     qr_text: str = Field(default="", max_length=50000)
 
 
@@ -59,11 +60,24 @@ class DashboardErrorResponse(BaseModel):
 @router.post("/analyze-email", response_model=AnalyzeResponse)
 async def analyze_email(payload: AnalyzeEmailRequest) -> AnalyzeResponse:
     try:
-        result = email_service.predict_email(
-            subject=payload.subject,
-            body=payload.body,
-            sender=payload.sender,
-        )
+        input_type = payload.scan_type.strip().lower() or "email"
+        if input_type not in {"email", "attachments", "webpage", "image"}:
+            input_type = "email"
+
+        has_email_content = bool(payload.subject.strip() or payload.body.strip() or payload.sender.strip())
+        if input_type != "email" and not has_email_content:
+            result = {
+                "label": "SAFE",
+                "confidence": 0.5,
+                "risk_level": "LOW",
+                "reasons": [],
+            }
+        else:
+            result = email_service.predict_email(
+                subject=payload.subject,
+                body=payload.body,
+                sender=payload.sender,
+            )
         multimodal_result = analyze_multimodal_features(
             subject=payload.subject,
             body=payload.body,
@@ -75,12 +89,10 @@ async def analyze_email(payload: AnalyzeEmailRequest) -> AnalyzeResponse:
             return_path=payload.return_path,
             webpage_text=payload.webpage_text,
             image_indicators=payload.image_indicators,
+            image_payloads=payload.image_payloads,
             qr_text=payload.qr_text,
         )
         result = merge_multimodal_result(result, multimodal_result)
-        input_type = payload.scan_type.strip().lower() or "email"
-        if input_type not in {"email", "attachments", "webpage", "image"}:
-            input_type = "email"
         scan_id = scan_history_service.record_scan(
             source="manual",
             input_type=input_type,

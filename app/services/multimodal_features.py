@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import base64
+import binascii
+import io
 import re
 from email.utils import parseaddr
 from html.parser import HTMLParser
@@ -428,6 +431,123 @@ def _score_webpage(webpage_text: str, urls: list[str], sender_domain: str) -> tu
     return score, reasons, all_urls
 
 
+def _image_payload_name(item: Any) -> str:
+    if isinstance(item, dict):
+        return str(item.get("filename") or item.get("name") or "image").strip()
+    return "image"
+
+
+def _image_payload_data(item: Any) -> bytes:
+    if not isinstance(item, dict):
+        return b""
+
+    value = str(item.get("data_url") or item.get("base64") or "").strip()
+    if not value:
+        return b""
+    if "," in value and value.lower().startswith("data:"):
+        value = value.split(",", 1)[1]
+
+    try:
+        return base64.b64decode(value, validate=False)
+    except (binascii.Error, ValueError):
+        return b""
+
+
+def _score_image_payloads(image_payloads: list[Any]) -> tuple[float, list[str], int, int, str, list[str]]:
+    score = 0.0
+    reasons: list[str] = []
+    image_count = 0
+    qr_count = 0
+    extracted_texts: list[str] = []
+    decoded_qr_values: list[str] = []
+
+    if not image_payloads:
+        return score, reasons, image_count, qr_count, "", []
+
+    try:
+        from PIL import Image
+    except ImportError:
+        reasons.append("Image OCR/QR analysis requires Pillow")
+        return score, reasons, len(image_payloads), qr_count, "", []
+
+    try:
+        from pyzbar.pyzbar import decode as decode_qr
+    except Exception:
+        decode_qr = None
+
+    try:
+        import pytesseract
+    except ImportError:
+        pytesseract = None
+
+    for item in image_payloads[:5]:
+        name = _image_payload_name(item)
+        raw = _image_payload_data(item)
+        if not raw:
+            reasons.append(f"No image bytes received for OCR/QR analysis: {name}")
+            continue
+        if len(raw) > 4 * 1024 * 1024:
+            reasons.append(f"Image is too large for OCR/QR sampling: {name}")
+            continue
+
+        try:
+            with Image.open(io.BytesIO(raw)) as image:
+                image_count += 1
+                normalized = image.convert("RGB")
+
+                if decode_qr is not None:
+                    try:
+                        decoded_items = decode_qr(normalized)
+                    except Exception:
+                        decoded_items = []
+                    for decoded in decoded_items:
+                        value = decoded.data.decode("utf-8", errors="replace").strip()
+                        if value:
+                            decoded_qr_values.append(value)
+                    if decoded_items:
+                        qr_count += len(decoded_items)
+                        score += 0.65
+                        reasons.append(f"QR code decoded from image: {name}")
+
+                if pytesseract is not None:
+                    try:
+                        ocr_text = pytesseract.image_to_string(normalized, timeout=8).strip()
+                    except Exception as exc:
+                        ocr_text = ""
+                        if "tesseract" in str(exc).lower():
+                            reasons.append("Tesseract executable is not available, so OCR was skipped")
+                    if ocr_text:
+                        extracted_texts.append(ocr_text)
+                        reasons.append(f"OCR text extracted from image: {name}")
+        except Exception:
+            reasons.append(f"Unable to read uploaded image: {name}")
+
+    if image_payloads and decode_qr is None:
+        reasons.append("pyzbar is not available, so QR decoding was skipped")
+    if image_payloads and pytesseract is None:
+        reasons.append("pytesseract is not available, so OCR was skipped")
+    if image_count and decode_qr is not None and not decoded_qr_values:
+        reasons.append("QR decoder ran but no QR code was decoded")
+    if image_count and pytesseract is not None and not extracted_texts:
+        reasons.append("OCR ran but no readable text was extracted")
+
+    combined_text = "\n".join(extracted_texts + decoded_qr_values)
+    if CREDENTIAL_PATTERN.search(combined_text):
+        score += 0.45
+        reasons.append("OCR/QR text contains credential or verification wording")
+    if QR_PATTERN.search(combined_text):
+        score += 0.35
+        reasons.append("OCR/QR text mentions QR or scan-code flow")
+    if extract_urls(combined_text):
+        score += 0.35
+        reasons.append("OCR/QR text contains embedded links")
+    if any(brand in combined_text.lower() for brand in BRAND_WORDS) and CREDENTIAL_PATTERN.search(combined_text):
+        score += 0.3
+        reasons.append("OCR/QR text combines brand language with credential requests")
+
+    return score, reasons, image_count, qr_count, combined_text, decoded_qr_values
+
+
 def analyze_multimodal_features(
     *,
     subject: str = "",
@@ -440,6 +560,7 @@ def analyze_multimodal_features(
     return_path: str = "",
     webpage_text: str = "",
     image_indicators: list[str] | str | None = None,
+    image_payloads: list[Any] | None = None,
     qr_text: str = "",
 ) -> dict[str, Any]:
     display, address, sender_domain = _sender_parts(sender)
@@ -463,11 +584,18 @@ def analyze_multimodal_features(
     sender_score, sender_reasons = _score_sender(sender, reply_to, return_path)
     attachment_score, attachment_reasons, image_count, qr_count = _score_attachments(list(attachment_items))
     webpage_score, webpage_reasons, webpage_urls = _score_webpage(webpage_text, urls, sender_domain)
+    image_score, image_reasons, payload_image_count, payload_qr_count, extracted_image_text, decoded_qr_values = _score_image_payloads(
+        image_payloads or []
+    )
 
-    score += sender_score + attachment_score + webpage_score
-    reasons.extend(sender_reasons + attachment_reasons + webpage_reasons)
+    score += sender_score + attachment_score + webpage_score + image_score
+    image_count += payload_image_count
+    qr_count += payload_qr_count
+    reasons.extend(sender_reasons + attachment_reasons + webpage_reasons + image_reasons)
 
-    image_text = " ".join(image_notes + [qr_text, subject, body])
+    image_text = " ".join(image_notes + [qr_text, extracted_image_text, subject, body])
+    urls = list(dict.fromkeys(urls + extract_urls(extracted_image_text, "\n".join(decoded_qr_values))))
+    link_domains = {_registered_domain(item) for item in urls if _registered_domain(item)}
     if image_notes:
         image_count += len(image_notes)
         reasons.append("Image-based content supplied for analysis")

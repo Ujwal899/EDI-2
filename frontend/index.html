@@ -1980,7 +1980,19 @@
 
       try {
         const errorData = JSON.parse(body);
-        return errorData.detail || errorData.details || errorData.error || body;
+        const detail = errorData.detail || errorData.details || errorData.error || body;
+        if (Array.isArray(detail)) {
+          return detail.map((item) => {
+            if (!item || typeof item !== "object") return String(item);
+            const location = Array.isArray(item.loc) ? item.loc.join(".") : "";
+            const message = item.msg || JSON.stringify(item);
+            return location ? `${location}: ${message}` : message;
+          }).join("; ");
+        }
+        if (detail && typeof detail === "object") {
+          return JSON.stringify(detail);
+        }
+        return String(detail);
       } catch (_) {
         return body;
       }
@@ -2039,9 +2051,55 @@
       };
     }
 
+    async function readImagePayload(file) {
+      const base = await readFileSignal(file);
+      const maxDirectBytes = 4 * 1024 * 1024;
+
+      try {
+        if ((file.size || 0) <= maxDirectBytes) {
+          const dataUrl = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(String(reader.result || ""));
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          });
+          return { ...base, data_url: dataUrl };
+        }
+
+        const bitmap = await createImageBitmap(file);
+        const maxSide = 1400;
+        const scale = Math.min(1, maxSide / Math.max(bitmap.width, bitmap.height));
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+        canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+        const dataUrl = await new Promise((resolve, reject) => {
+          canvas.toBlob((blob) => {
+            if (!blob) {
+              reject(new Error("Unable to compress image"));
+              return;
+            }
+            const reader = new FileReader();
+            reader.onload = () => resolve(String(reader.result || ""));
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+          }, "image/png");
+        });
+        return { ...base, data_url: dataUrl, resized_for_analysis: true };
+      } catch (_) {
+        return { ...base, image_read_error: true };
+      }
+    }
+
     async function fileDescriptions(input) {
       const files = Array.from((input && input.files) || []);
       return Promise.all(files.map(readFileSignal));
+    }
+
+    async function imagePayloads(input) {
+      const files = Array.from((input && input.files) || []);
+      return Promise.all(files.map(readImagePayload));
     }
 
     async function getManualPayload() {
@@ -2049,9 +2107,15 @@
         .split(/\n|,/)
         .map((item) => item.trim())
         .filter(Boolean);
+      const limitText = (value, maxLength) => String(value || "").slice(0, maxLength);
       const attachmentFiles = await fileDescriptions(manualAttachmentFiles);
-      const imageFiles = await fileDescriptions(manualImageFiles);
+      const imageFiles = await imagePayloads(manualImageFiles);
       const imageFileLabels = imageFiles.map((file) => `${file.filename}${file.mime_type ? ` (${file.mime_type})` : ""}${file.size ? ` - ${file.size} bytes` : ""}`);
+      const qrText = [manualImage.value.trim()]
+        .concat(imageFileLabels)
+        .concat(imageFiles.map((file) => limitText(file.content_sample, 12000)))
+        .filter(Boolean)
+        .join("\n");
 
       return {
         subject: manualSubject.value.trim(),
@@ -2064,7 +2128,8 @@
         return_path: manualReturnPath.value.trim(),
         webpage_text: manualPage.value.trim(),
         image_indicators: parseLines(manualImage.value).concat(imageFileLabels),
-        qr_text: [manualImage.value.trim()].concat(imageFileLabels).concat(imageFiles.map((file) => file.content_sample)).filter(Boolean).join("\n"),
+        image_payloads: imageFiles,
+        qr_text: limitText(qrText, 45000),
       };
     }
 
@@ -2183,6 +2248,7 @@
       clearSectionsExcept("image");
       postAnalysis("/analyze-email", {
         image_indicators: payload.image_indicators,
+        image_payloads: payload.image_payloads,
         qr_text: payload.qr_text,
         scan_type: "image",
       }, "Image / QR analysis result", "image");
